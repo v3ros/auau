@@ -1,0 +1,148 @@
+Folder PATH listing
+Volume serial number is C285-58F0
+C:.
+³   .gitignore
+³   components.json
+³   next.config.mjs
+³   package.json
+³   pnpm-lock.yaml
+³   pnpm-workspace.yaml
+³   postcss.config.mjs
+³   struktur.txt
+³   tsconfig.json
+³   
+ÃÄÄÄ.github
+³   ÀÄÄÄworkflows
+³           deploy-pages.yml
+³           
+ÃÄÄÄapp
+³       globals.css
+³       layout.tsx
+³       page.tsx
+³       
+ÃÄÄÄcomponents
+³   ÃÄÄÄapps
+³   ³   ³   anyai-app.tsx
+³   ³   ³   calendar-app.tsx
+³   ³   ³   camera-app.tsx
+³   ³   ³   clock-app.tsx
+³   ³   ³   messages-app.tsx
+³   ³   ³   notes-app.tsx
+³   ³   ³   phone-app.tsx
+³   ³   ³   photos-app.tsx
+³   ³   ³   safari-app.tsx
+³   ³   ³   settings-app.tsx
+³   ³   ³   voice-memos-app.tsx
+³   ³   ³   
+³   ³   ÃÄÄÄkakao
+³   ³   ³       chat-room.tsx
+³   ³   ³       kakao-app.tsx
+³   ³   ³       sticker.tsx
+³   ³   ³       
+³   ³   ÀÄÄÄnaver
+³   ³           chatgpt-results.tsx
+³   ³           depression-results.tsx
+³   ³           flight-results.tsx
+³   ³           hansung-results.tsx
+³   ³           kin-post.tsx
+³   ³           original-work-results.tsx
+³   ³           
+³   ÃÄÄÄphone
+³   ³       app-icons.tsx
+³   ³       chrome.tsx
+³   ³       home-screen.tsx
+³   ³       incoming-call.tsx
+³   ³       lock-screen.tsx
+³   ³       notification-banner.tsx
+³   ³       outgoing-call.tsx
+³   ³       passcode.tsx
+³   ³       phone-loader.tsx
+³   ³       phone.tsx
+³   ³       top-nav.tsx
+³   ³       widgets.tsx
+³   ³       
+³   ÀÄÄÄui
+³           button.tsx
+³           
+ÃÄÄÄlib
+³   ³   base-path.ts
+³   ³   sound.ts
+³   ³   utils.ts
+³   ³   
+³   ÀÄÄÄstory
+³           anyai.ts
+³           back-nav.tsx
+³           calls.ts
+³           contacts.ts
+³           events.ts
+³           kakao.ts
+³           photos.ts
+³           search.ts
+³           sms.ts
+³           store.tsx
+³           time.ts
+³           
+ÀÄÄÄpublic
+    ³   .nojekyll
+    ³   apple-icon.png
+    ³   icon-dark-32x32.png
+    ³   icon-light-32x32.png
+    ³   icon.svg
+    ³   placeholder-logo.png
+    ³   placeholder-logo.svg
+    ³   placeholder-user.jpg
+    ³   placeholder.jpg
+    ³   placeholder.svg
+    ³   
+    ÃÄÄÄimages
+    ³   ³   wallpaper.jpg
+    ³   ³   wallpaper.png
+    ³   ³   
+    ³   ÃÄÄÄnaver
+    ³   ³       blog-1.png
+    ³   ³       blog-2.png
+    ³   ³       concert-news.png
+    ³   ³       flight-map.png
+    ³   ³       hansung-map.png
+    ³   ³       hospital.png
+    ³   ³       sushi-1.png
+    ³   ³       sushi-2.png
+    ³   ³       
+    ³   ÃÄÄÄphotos
+    ³   ³       1.jpeg
+    ³   ³       10.jpeg
+    ³   ³       2.jpeg
+    ³   ³       3.jpeg
+    ³   ³       4.jpeg
+    ³   ³       5.jpeg
+    ³   ³       6.jpeg
+    ³   ³       7.jpeg
+    ³   ³       8.jpeg
+    ³   ³       9.jpeg
+    ³   ³       
+    ³   ÃÄÄÄprofiles
+    ³   ³       default.jpeg
+    ³   ³       kakaopay.png
+    ³   ³       me.jpeg
+    ³   ³       supreme.jpeg
+    ³   ³       wa.png
+    ³   ³       yh.jpeg
+    ³   ³       
+    ³   ÀÄÄÄstickers
+    ³           bunny-cry.png
+    ³           
+    ÃÄÄÄsounds
+    ³   ³   dialing.mp3
+    ³   ³   kakao.mp3
+    ³   ³   ringtone.mp3
+    ³   ³   yh-call.mp3
+    ³   ³   yh-outgoing.mp3
+    ³   ³   
+    ³   ÀÄÄÄmemos
+    ³           memo-1.mp3
+    ³           memo-2.mp3
+    ³           memo-3.mp3
+    ³           
+    ÀÄÄÄvideos
+            camera.mp4
+            
