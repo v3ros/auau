@@ -439,7 +439,7 @@ export function StoryProvider({
             setBanner({
               key: 'morning-greeting-home',
               roomId: 'natasya',
-              sender: 'Sysyyy',
+              sender: 'Veros',
               lines: ['Hiii Sysyyy, Good Morninggg'],
               time: 'Just now',
             })

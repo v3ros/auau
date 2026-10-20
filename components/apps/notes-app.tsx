@@ -12,7 +12,7 @@ const NOTES: Note[] = [
     id: 'n1',
     title: 'GOOD MORNING SYSYYY',
     date: '6.30 PM',
-    body: 'Morning monrninggg\n\nhaiii, seharusnya ini udah cukup buat pagi ini bisa kamu akses tanpa masalah!!!\n\nSemoga hari ini kamu kerjaan kamu lancar teruss yaa sampai kamu pulang dan seruu.\n\nsemangat terus jalani aktivitasnya!!',
+    body: 'Morning monrninggg\n\nhaiii, seharusnya sementara ini udah cukup buat pagi ini dan bisa kamu akses tanpa masalah!!!\n\nSemoga kerjaan kamu hari ini lancar teruss yaa sampai kamu pulanggg.\n\nsemangat terus sysyyy!!',
   },
 ]
 
