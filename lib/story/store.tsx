@@ -1,4 +1,3 @@
-
 'use client'
 
 import {
@@ -127,6 +126,7 @@ type StoryContext = {
   banner: Banner | null
   dismissBanner: () => void
   openBanner: (banner: Banner) => void
+  showCustomBanner: (banner: Banner) => void
   resetStory: () => void
   cameraUsed: boolean
   markCameraUsed: () => void
@@ -422,6 +422,11 @@ export function StoryProvider({
     0,
   )
 
+  const showCustomBanner = useCallback((customBanner: Banner) => {
+    setBanner(customBanner)
+    // Suara playSound dihapus di sini agar tidak bersuara dan tidak mengganggu
+  }, [])
+
   const value: StoryContext = {
     screen,
     unlock: () => setScreen({ kind: 'home' }),
@@ -454,6 +459,7 @@ export function StoryProvider({
       setKakaoRoomId(currentBanner.roomId)
       setScreen({ kind: 'app', app: 'kakao' })
     },
+    showCustomBanner,
     resetStory: () => {
       timers.current.forEach((timer) =>
         window.clearTimeout(timer),

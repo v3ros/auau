@@ -19,6 +19,7 @@ function formatDuration(totalSeconds: number) {
 }
 
 export function IncomingCall() {
+  return null
   const [state, setState] = useState<CallState>('idle')
   const [seconds, setSeconds] = useState(0)
   const [muted, setMuted] = useState(false)

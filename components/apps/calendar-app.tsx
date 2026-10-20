@@ -75,17 +75,10 @@ export function CalendarApp() {
       {/* List Event / Agenda Contoh */}
       <div className="mt-4 flex-1 border-t border-gray-200 px-4 pt-4">
         <div className="flex items-center gap-3 py-2">
-          <div className="h-10 w-1 rounded-full bg-blue-500" />
-          <div>
-            <p className="text-sm font-semibold">Supplementary Class</p>
-            <p className="text-xs text-gray-400">14:00</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 py-2">
           <div className="h-10 w-1 rounded-full bg-purple-500" />
           <div>
-            <p className="text-sm font-semibold">Finish Work / Clock Out</p>
-            <p className="text-xs text-gray-400">19:00</p>
+            <p className="text-sm font-semibold">last intern</p>
+            <p className="text-xs text-gray-400">31 October 2026</p>
           </div>
         </div>
       </div>

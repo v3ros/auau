@@ -5,6 +5,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Camera, Flashlight, Lock } from 'lucide-react'
 import { useStory } from '@/lib/story/store'
 import { HomeIndicator, StatusBar } from './chrome'
+import { cn } from '@/lib/utils'
 
 export function LockScreen() {
   const { openPasscode } = useStory()
@@ -12,6 +13,7 @@ export function LockScreen() {
 
   const [formattedDate, setFormattedDate] = useState('')
   const [realTimeClock, setRealTimeClock] = useState('')
+  const [isLeaving, setIsLeaving] = useState(false)
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -42,13 +44,26 @@ export function LockScreen() {
     return () => clearInterval(interval)
   }, [])
 
+  const handleUnlock = () => {
+    if (isLeaving) return
+    setIsLeaving(true)
+    setTimeout(() => {
+      openPasscode()
+    }, 300) // Durasi transisi (dalam milidetik) sebelum membuka passcode
+  }
+
   return (
     <div
-      className="absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white"
+      className={cn(
+        "absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white transition-all duration-300 ease-out",
+        isLeaving ? "opacity-0 scale-105" : "opacity-100 scale-100"
+      )}
       style={{ backgroundImage: `url(${withBasePath('/images/wallpaper.jpg')})` }}
       onPointerDown={(e) => (startY.current = e.clientY)}
       onPointerUp={(e) => {
-        if (startY.current !== null && startY.current - e.clientY > 60) openPasscode()
+        if (startY.current !== null && startY.current - e.clientY > 60) {
+          handleUnlock()
+        }
         startY.current = null
       }}
     >
@@ -86,7 +101,7 @@ export function LockScreen() {
           Swipe up to unlock
         </p>
         
-        <HomeIndicator tone="light" onActivate={openPasscode} label="Unlock" />
+        <HomeIndicator tone="light" onActivate={handleUnlock} label="Unlock" />
       </div>
     </div>
   )

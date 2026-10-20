@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -82,15 +81,24 @@ export function PhotosApp() {
                 type="button"
                 onClick={() => setOpenIndex(i)}
                 aria-label={`View photo from ${formatPhotoDate(p.at)}`}
-                className="block aspect-square w-full overflow-hidden bg-[#eee] active:opacity-80"
+                className="block aspect-square w-full overflow-hidden bg-[#eee] active:opacity-80 relative"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.src}
-                  alt={p.alt}
-                  className="size-full object-cover"
-                  loading="lazy"
-                />
+                {p.type === 'video' ? (
+                  <video
+                    src={p.src}
+                    className="size-full object-cover pointer-events-none"
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={p.src}
+                    alt={p.alt}
+                    className="size-full object-cover"
+                    loading="lazy"
+                  />
+                )}
               </button>
             </li>
           ))}
@@ -225,14 +233,25 @@ function Viewer({
           else if (Math.abs(dx) < 6) setChrome((c) => !c)
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={photo.id}
-          src={photo.src}
-          alt={photo.alt}
-          draggable={false}
-          className="animate-screen-in max-h-full max-w-full select-none object-contain"
-        />
+        {photo.type === 'video' ? (
+          <video
+            key={photo.id}
+            src={photo.src}
+            controls
+            autoPlay
+            playsInline
+            className="animate-screen-in max-h-full max-w-full select-none object-contain"
+          />
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            key={photo.id}
+            src={photo.src}
+            alt={photo.alt}
+            draggable={false}
+            className="animate-screen-in max-h-full max-w-full select-none object-contain"
+          />
+        )}
 
         {hasPrev && (
           <button
@@ -280,16 +299,25 @@ function Viewer({
                 aria-label={`Photo ${i + 1}`}
                 aria-current={i === index ? 'true' : undefined}
                 className={cn(
-                  'block h-9 overflow-hidden transition-all',
+                  'block h-9 overflow-hidden transition-all relative',
                   i === index ? 'mx-1 w-7' : 'w-5 opacity-80',
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.src}
-                  alt=""
-                  className="size-full object-cover"
-                />
+                {p.type === 'video' ? (
+                  <video
+                    src={p.src}
+                    className="size-full object-cover pointer-events-none"
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={p.src}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                )}
               </button>
             </li>
           ))}

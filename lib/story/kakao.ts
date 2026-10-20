@@ -74,14 +74,13 @@ const T = 'them' as const
 
 export const kakaoRooms: KakaoRoom[] = [
   room('natasya', 'natasya', [
+    ['2026-10-20 19:29', ME, 'halloo sysyy'],
     ['2026-10-20 19:30', T, 'hiii'],
-    ['2026-10-20 19:31', ME, 'aku baru selesai makannn'],
-    ['2026-10-20 19:31', ME, 'kenyangg'],
-    ['2026-10-20 19:32', ME, 'omg'],
-    ['2026-10-20 19:33', ME, { text: 'you', reply: { to: 'natasya', text: 'hiii' } }],
-    ['2026-10-20 19:34', T, 'kok aku? bukanya kamu itu nempel bantal langsung bobo?'],
-    ['2026-10-20 19:35', ME, 'chat begini nanti yang aku masukin ke itu'],
-    ['2026-10-20 19:36', ME, 'purringnya kenceng bangett'],
+    ['2026-10-20 19:30', T, 'by the waaay good morniiing'],
+    ['2026-10-20 19:30', T, 'semangat kuliahnya hari iniii averroes, semoga kamu langsung paham semua materinya dalam 1 kedipan'],
+    ['2026-10-20 19:31', T, 'have a great great great daaay ahead'],
+    ['2026-10-20 19:31', ME, 'good morningg sysyyy'],
+    ['2026-10-20 19:33', ME, { text: 'thank youuu natasya sysy angel, kamu juga yaa semoga kerjaan hari ini bener-bener lancarr dan mudah-semudahnya sampai kamu pulang nantiii', reply: { to: 'natasya', text: 'semangat kuliahnya hari iniii averroes, semoga kamu langsung paham semua materinya dalam 1 kedipan' } }],
   ]),
   room('alex', 'alex', [
     ['2026-10-20 10:00', T, 'Hey, are you free later?'],

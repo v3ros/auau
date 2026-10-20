@@ -14,8 +14,7 @@ export function NotificationBanner() {
     setDragY(0)
     const t = window.setTimeout(dismissBanner, 5000)
     return () => window.clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [banner?.key])
+  }, [banner?.key, dismissBanner])
 
   if (!banner || screen.kind === 'lock' || screen.kind === 'passcode') return null
 
@@ -25,7 +24,7 @@ export function NotificationBanner() {
         key={banner.key}
         role="button"
         tabIndex={0}
-        aria-label={`카카오톡 ${banner.sender}: ${banner.lines.join(' ')}. 눌러서 열기`}
+        aria-label={`${banner.sender}: ${banner.lines.join(' ')}. Tap to open`}
         className="animate-banner-in pointer-events-auto flex touch-none select-none gap-3 rounded-[22px] bg-white/80 p-3 text-black shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-2xl"
         style={{ transform: `translateY(${Math.min(0, dragY)}px)`, transition: startY.current === null ? 'transform 0.2s' : 'none' }}
         onPointerDown={(e) => {
@@ -49,14 +48,24 @@ export function NotificationBanner() {
           }
         }}
       >
-        <span className="size-9 shrink-0">
-          <AppGlyph kind="kakao" />
+        <span className="size-9 shrink-0 flex items-center justify-center overflow-hidden rounded-[22%] bg-black">
+          {/* Mengubah ikon menjadi logo X */}
+          <svg
+            viewBox="0 0 24 24"
+            className="size-[72%] text-white"
+            fill="currentColor"
+            role="img"
+            aria-label="X"
+          >
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.967 6.817H1.681l7.73-8.835L1.255 2.25h6.826l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+          </svg>
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
             <p className="truncate text-[15px] font-semibold">{banner.sender}</p>
+            {/* Mengubah teks bahasa korea '카카오톡' menjadi 'Messages' atau 'Chat' */}
             <p className="shrink-0 text-xs text-black/50">
-              카카오톡 · {banner.time}
+              Messages · {banner.time}
             </p>
           </div>
           {banner.lines.map((line, i) => (

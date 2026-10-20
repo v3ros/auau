@@ -1,7 +1,6 @@
-
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { withBasePath } from '@/lib/base-path'
 import { cn } from '@/lib/utils'
 import { useStory, type AppId } from '@/lib/story/store'
@@ -58,16 +57,33 @@ function XIcon() {
 }
 
 export function HomeScreen() {
-  const { openApp } = useStory()
+  const { openApp, lock, showCustomBanner } = useStory()
   const [page, setPage] = useState(0)
+  const [isLocking, setIsLocking] = useState(false)
   const pagerRef = useRef<HTMLDivElement>(null)
+
+  // Memunculkan banner sapaan otomatis saat pertama kali masuk ke Home Screen
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      showCustomBanner({
+        key: 'morning-greeting-home',
+        roomId: 'natasya', // Sesuaikan dengan id chat/room yang sesuai di projectmu
+        sender: 'Veros',
+        lines: ['Hiii Sysyyy, Good Morninggg'],
+        time: 'Just now',
+      })
+    }, 600) // Delay sedikit agar mulus setelah animasi masuk Home
+
+    return () => window.clearTimeout(timer)
+  }, [showCustomBanner])
 
   const launch = (app: AppId) => {
     if (
       app === 'photos' ||
       app === 'calendar' ||
       app === 'kakao' ||
-      app === 'camera'
+      app === 'camera' ||
+      app === 'notes'
     ) {
       openApp(app)
     }
@@ -82,12 +98,26 @@ export function HomeScreen() {
     })
   }
 
+  const handleDoubleTapLock = () => {
+    if (isLocking) return
+    setIsLocking(true)
+    setTimeout(() => {
+      if (typeof lock === 'function') {
+        lock()
+      }
+    }, 300) // Durasi animasi sebelum mengunci
+  }
+
   return (
     <div
-      className="animate-screen-in absolute inset-0 flex flex-col bg-cover bg-center text-white"
+      className={cn(
+        "animate-screen-in absolute inset-0 flex flex-col bg-cover bg-center text-white select-none transition-all duration-300 ease-out",
+        isLocking ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"
+      )}
       style={{
         backgroundImage: `url(${withBasePath('/images/wallpaper.jpg')})`,
       }}
+      onDoubleClick={handleDoubleTapLock}
     >
       <div className="relative flex h-full min-h-0 flex-col">
         <StatusBar tone="light" />
@@ -140,7 +170,10 @@ export function HomeScreen() {
                 role="tab"
                 aria-selected={page === i}
                 aria-label={`Page ${i + 1}`}
-                onClick={() => goToPage(i)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  goToPage(i)
+                }}
                 className={cn(
                   'size-[7px] rounded-full transition-colors',
                   page === i ? 'bg-white' : 'bg-white/45',
@@ -158,7 +191,10 @@ export function HomeScreen() {
             <button
               key={d.kind}
               type="button"
-              onClick={() => d.app && launch(d.app)}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (d.app) launch(d.app)
+              }}
               aria-label={d.label}
               className="mx-auto block aspect-square w-full max-w-[64px] active:opacity-70"
             >
@@ -214,7 +250,8 @@ function AppGrid({
           <button
             key={a.kind}
             type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation()
               if (a.app) {
                 onLaunch(a.app)
               } else if (a.href) {

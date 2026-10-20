@@ -10,33 +10,9 @@ type Note = { id: string; title: string; date: string; body: string }
 const NOTES: Note[] = [
   {
     id: 'n1',
-    title: 'Road to Mythical Glory Draft Pick',
-    date: '5:42 PM',
-    body: 'Road to Mythical Glory Draft Pick\n\nPriority picks for current meta:\n- Jungler: Ling, Fanny, Hayabusa (secure purple buff early!)\n- Gold Lane: Brody, Claude, Moskov\n- Mid Lane: Valentina, Novaria, Faramis\n- Exp Lane: Yu Zhong, Cici, Arlott\n- Roam: Tigreal, Mathilda, Minotaur\n\nJangan lupa ban Diggie sama Nana kalau musuh first pick!',
-  },
-  {
-    id: 'n2',
-    title: 'Hero Build & Emblem Setup',
-    date: 'Yesterday',
-    body: 'Hero Build & Emblem Setup\n\nAssassin Emblem:\n- Rupture (Adaptive Attack & Penetration)\n- Master Assassin (Damage bonus 1v1)\n- Lethal Ignition (Extra burn damage)\n\nBattle Spell:\n- Retribution for Jungler\n- Flicker for Marksman / Mage',
-  },
-  {
-    id: 'n3',
-    title: 'Squad & Tournament Strategy',
-    date: 'Yesterday',
-    body: 'Squad & Tournament Strategy\n\n1. Objective first: Turtle before 2 minutes.\n2. Do not split push when Lord is spawning in 30 seconds.\n3. Communication is key: Always spam "Launch the Attack!" or "Gather, Team!"',
-  },
-  {
-    id: 'n4',
-    title: 'MCL Schedule & Registration',
-    date: '2025. 10. 14.',
-    body: 'MCL Schedule & Registration\n\nSaturday Night: 20:00 WIB\nRequirements: Weekly Activity Points > 100\nSquad members must be online 15 minutes prior.',
-  },
-  {
-    id: 'n5',
-    title: 'Epic Comeback Moments',
-    date: '2025. 10. 02.',
-    body: 'Epic Comeback Moments\n\n1. 1v5 Savage with Ling in base defense.\n2. Base HP 1% clutch Lord steal.\n3. Win streak 10 matches in a row!',
+    title: 'GOOD MORNING SYSYYY',
+    date: '6.30 PM',
+    body: 'Morning monrninggg\n\nhaiii, seharusnya ini udah cukup buat pagi ini bisa kamu akses tanpa masalah!!!\n\nSemoga hari ini kamu kerjaan kamu lancar teruss yaa sampai kamu pulang dan seruu.\n\nsemangat terus jalani aktivitasnya!!',
   },
 ]
 
@@ -61,7 +37,7 @@ function NoteList({ onOpen }: { onOpen: (id: string) => void }) {
         <h1 className="pt-10 text-[32px] font-bold tracking-tight">Notes</h1>
         <div className="mt-2 flex items-center gap-2 rounded-[10px] bg-black/[0.06] px-2.5 py-2 text-[16px] text-black/40" aria-hidden>
           <Search className="size-4" />
-          Search MLBB Notes
+          Search Notes
         </div>
         <ul className="mt-5 overflow-hidden rounded-[12px] bg-white">
           {NOTES.map((n, i) => {
@@ -93,6 +69,8 @@ function NoteList({ onOpen }: { onOpen: (id: string) => void }) {
 
 function NoteDetail({ note, onBack }: { note: Note; onBack: () => void }) {
   const [title, ...rest] = note.body.split('\n')
+  const bodyText = rest.join('\n').trimStart()
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white">
       <div className="flex items-center px-2 py-2">
@@ -104,7 +82,16 @@ function NoteDetail({ note, onBack }: { note: Note; onBack: () => void }) {
       <article className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6">
         <p className="text-center text-[12px] text-black/40">{note.date}</p>
         <h1 className="mt-3 text-[24px] font-bold">{title}</h1>
-        <p className="mt-2 whitespace-pre-line text-[17px] leading-relaxed">{rest.join('\n').trimStart()}</p>
+        <p className="mt-2 whitespace-pre-line text-[17px] leading-relaxed">{bodyText}</p>
+        
+        {/* Gambar Stiker Kucing Ditampilkan di Sini */}
+        <div className="mt-6 flex justify-center">
+          <img 
+            src="/images/stickers/cathappy.png" 
+            alt="Happy Cat" 
+            className="w-20 h-20 object-contain" 
+          />
+        </div>
       </article>
     </div>
   )

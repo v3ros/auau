@@ -127,10 +127,16 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'notes':
       return (
-        <span className={base} style={{ background: 'linear-gradient(145deg, #0f172a, #020617)' }}>
-          <span className="flex h-full w-full items-center justify-center">
-            <span className="text-[17px] font-extrabold tracking-tight text-[#ffc107]" style={{ textShadow: '0 0 8px rgba(255, 193, 7, 0.6)' }}>
-              MLBB
+        <span className={`${base} flex-col bg-[#fee500]`}>
+          <span className="flex h-full w-full flex-col">
+            <span className="h-[14%] w-full bg-[#f8d000]" />
+            <span className="flex-1 px-[15%] py-[10%]">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="mb-[16%] block h-[2.5%] w-full rounded-full bg-black/15"
+                />
+              ))}
             </span>
           </span>
         </span>
