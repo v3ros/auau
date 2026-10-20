@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { withBasePath } from '@/lib/base-path'
 import { cn } from '@/lib/utils'
 import { useStory, type AppId } from '@/lib/story/store'
@@ -57,25 +57,10 @@ function XIcon() {
 }
 
 export function HomeScreen() {
-  const { openApp, lock, showCustomBanner } = useStory()
+  const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
   const [isLocking, setIsLocking] = useState(false)
   const pagerRef = useRef<HTMLDivElement>(null)
-
-  // Memunculkan banner sapaan otomatis saat pertama kali masuk ke Home Screen
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      showCustomBanner({
-        key: 'morning-greeting-home',
-        roomId: 'natasya', // Sesuaikan dengan id chat/room yang sesuai di projectmu
-        sender: 'Veros',
-        lines: ['Hiii Sysyyy, Good Morninggg'],
-        time: 'Just now',
-      })
-    }, 600) // Delay sedikit agar mulus setelah animasi masuk Home
-
-    return () => window.clearTimeout(timer)
-  }, [showCustomBanner])
 
   const launch = (app: AppId) => {
     if (
@@ -105,7 +90,7 @@ export function HomeScreen() {
       if (typeof lock === 'function') {
         lock()
       }
-    }, 300) // Durasi animasi sebelum mengunci
+    }, 300)
   }
 
   return (

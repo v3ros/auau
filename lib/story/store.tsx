@@ -424,12 +424,31 @@ export function StoryProvider({
 
   const showCustomBanner = useCallback((customBanner: Banner) => {
     setBanner(customBanner)
-    // Suara playSound dihapus di sini agar tidak bersuara dan tidak mengganggu
   }, [])
 
   const value: StoryContext = {
     screen,
-    unlock: () => setScreen({ kind: 'home' }),
+    unlock: () => {
+      setScreen({ kind: 'home' })
+
+      // Memicu banner sapaan pagi tepat 1 kali saat pertama kali unlock ke Home
+      try {
+        if (!window.sessionStorage.getItem('morning_greeting_triggered')) {
+          window.sessionStorage.setItem('morning_greeting_triggered', 'true')
+          window.setTimeout(() => {
+            setBanner({
+              key: 'morning-greeting-home',
+              roomId: 'natasya',
+              sender: 'Sysyyy',
+              lines: ['Hiii Sysyyy, Good Morninggg'],
+              time: 'Just now',
+            })
+          }, 600)
+        }
+      } catch {
+        // Fallback jika sessionStorage bermasalah
+      }
+    },
     openPasscode: () => setScreen({ kind: 'passcode' }),
     lock: () => {
       setBanner(null)
