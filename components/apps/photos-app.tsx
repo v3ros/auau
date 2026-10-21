@@ -60,7 +60,6 @@ export function PhotosApp() {
   const gridRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Ambil foto dari Supabase saat aplikasi dibuka
   const fetchPhotos = async () => {
     setLoading(true)
     const { data, error } = await supabase
@@ -72,9 +71,9 @@ export function PhotosApp() {
       const formatted = data.map((item: any) => ({
         id: item.id,
         src: item.src,
-        alt: item.alt,
+        alt: item.alt || 'Photo',
         type: item.type || 'image',
-        at: item.created_at || item.at,
+        at: item.created_at || new Date().toISOString(),
       }))
       setPhotos(formatted)
     }
@@ -90,7 +89,6 @@ export function PhotosApp() {
     if (el) el.scrollTop = el.scrollHeight
   }, [photos])
 
-  // Fungsi upload foto ke Supabase secara permanen
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -102,13 +100,13 @@ export function PhotosApp() {
       const base64String = uploadEvent.target?.result as string
       if (!base64String) return
 
-      const nowIso = new Date().toISOString()
       const altText = file.name || 'Uploaded Photo'
 
-      // Simpan langsung ke Supabase
+      // Masukkan data hanya dengan kolom yang wajib (src dan alt)
+      // Supabase otomatis akan mengisi id dan created_at
       const { data, error } = await supabase
         .from('user_photos')
-        .insert([{ src: base64String, alt: altText, at: nowIso }])
+        .insert([{ src: base64String, alt: altText }])
         .select()
         .single()
 
@@ -118,26 +116,18 @@ export function PhotosApp() {
           src: data.src,
           alt: data.alt,
           type: 'image',
-          at: data.created_at || data.at,
+          at: data.created_at || new Date().toISOString(),
         }
         setPhotos((prev) => [newPhoto, ...prev])
       } else {
-        // Fallback lokal jika ada kendala jaringan
-        const tempPhoto: PhotoItem = {
-          id: `uploaded-${Date.now()}`,
-          src: base64String,
-          alt: altText,
-          type: 'image',
-          at: nowIso,
-        }
-        setPhotos((prev) => [tempPhoto, ...prev])
+        console.error('Error insert foto:', error)
+        alert('Gagal mengunggah foto ke database.')
       }
     }
 
     reader.readAsDataURL(file)
   }
 
-  // Fungsi Hapus Foto dari Supabase & State
   const handleDeletePhoto = async (id: string) => {
     setPhotos(photos.filter((p) => p.id !== id))
     setOpenIndex(null)
@@ -202,22 +192,13 @@ export function PhotosApp() {
                   aria-label={`View photo from ${formatPhotoDate(p.at)}`}
                   className="block aspect-square w-full overflow-hidden bg-[#eee] active:opacity-80 relative"
                 >
-                  {p.type === 'video' ? (
-                    <video
-                      src={p.src}
-                      className="size-full object-cover pointer-events-none"
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={p.src}
-                      alt={p.alt}
-                      className="size-full object-cover"
-                      loading="lazy"
-                    />
-                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.src}
+                    alt={p.alt}
+                    className="size-full object-cover"
+                    loading="lazy"
+                  />
                 </button>
               </li>
             ))}
@@ -364,25 +345,14 @@ function Viewer({
           else if (Math.abs(dx) < 6) setChrome((c) => !c)
         }}
       >
-        {photo.type === 'video' ? (
-          <video
-            key={photo.id}
-            src={photo.src}
-            controls
-            autoPlay
-            playsInline
-            className="animate-screen-in max-h-full max-w-full select-none object-contain"
-          />
-        ) : (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            key={photo.id}
-            src={photo.src}
-            alt={photo.alt}
-            draggable={false}
-            className="animate-screen-in max-h-full max-w-full select-none object-contain"
-          />
-        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={photo.id}
+          src={photo.src}
+          alt={photo.alt}
+          draggable={false}
+          className="animate-screen-in max-h-full max-w-full select-none object-contain"
+        />
 
         {hasPrev && (
           <button
