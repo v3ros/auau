@@ -169,7 +169,8 @@ function NoteList({
                     onClick={() => onOpen(n.id)} 
                     className="flex w-full items-center justify-between py-2.5 pr-4 text-left active:bg-black/5 [&:not(:first-child)]:pl-0"
                   >
-                    <span className={i === 0 ? 'block flex-1 px-4' : 'block flex-1'}>
+                    {/* Tambahkan min-w-0 agar flexbox tidak mendorong bookmark keluar saat teks panjang */}
+                    <span className={i === 0 ? 'block flex-1 min-w-0 px-4' : 'block flex-1 min-w-0'}>
                       <span className="block truncate text-[16px] font-semibold">{n.title || 'Tanpa Judul'}</span>
                       <span className="mt-0.5 flex gap-2 text-[14px] text-black/45">
                         <span className="shrink-0">{formatWIB(n.created_at)}</span>
@@ -275,7 +276,7 @@ function NoteDetail({
 
         <textarea 
           value={content}
-          onChange={(e) => handleContentChange(e.target.value)}
+          onChange={(e) => handleContentChange(e.target.value)} // disesuaikan handler-nya
           placeholder="Mulai ketik catatan..."
           className="no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full flex-1 resize-none bg-transparent text-[17px] leading-relaxed outline-none"
         />
