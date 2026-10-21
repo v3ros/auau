@@ -179,9 +179,9 @@ export function PhotosApp() {
         </header>
 
         {loading ? (
-          <p className="mt-10 text-center text-xs text-gray-400">Memuat galeri...</p>
+          <p className="mt-10 text-center text-xs text-gray-400">Loading gallery...</p>
         ) : photos.length === 0 ? (
-          <p className="mt-10 text-center text-xs text-gray-400">Belum ada foto. Klik tombol (+) di atas untuk upload!</p>
+          <p className="mt-10 text-center text-xs text-gray-400">No photos yet. Click the (+) button above to upload!</p>
         ) : (
           <ul className="grid grid-cols-3 gap-[2px]">
             {photos.map((p, i) => (
