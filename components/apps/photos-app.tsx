@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HomeIndicator, StatusBar } from '@/components/phone/chrome'
-import { photos as initialPhotos } from '@/lib/story/photos'
 import { supabase } from '@/lib/supabase'
 
 type PhotoItem = {
@@ -53,20 +52,45 @@ function formatPhotoTime(iso: string) {
 
 export function PhotosApp() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
-  const [photos, setPhotos] = useState<PhotoItem[]>(() => {
-    return initialPhotos.map(p => ({ ...p, type: p.type as 'image' | 'video' }))
-  })
+  const [photos, setPhotos] = useState<PhotoItem[]>([])
+  const [loading, setLoading] = useState(true)
   
   useBackHandler(openIndex !== null, () => setOpenIndex(null))
 
   const gridRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Ambil foto dari Supabase saat aplikasi dibuka
+  const fetchPhotos = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('user_photos')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (!error && data) {
+      const formatted = data.map((item: any) => ({
+        id: item.id,
+        src: item.src,
+        alt: item.alt,
+        type: item.type || 'image',
+        at: item.created_at || item.at,
+      }))
+      setPhotos(formatted)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchPhotos()
+  }, [])
+
   useLayoutEffect(() => {
     const el = gridRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [])
+  }, [photos])
 
+  // Fungsi upload foto ke Supabase secara permanen
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -78,33 +102,47 @@ export function PhotosApp() {
       const base64String = uploadEvent.target?.result as string
       if (!base64String) return
 
-      const newPhoto: PhotoItem = {
-        id: `uploaded-${Date.now()}`,
-        src: base64String,
-        alt: file.name || 'User Uploaded Photo',
-        type: 'image',
-        at: new Date().toISOString(),
-      }
+      const nowIso = new Date().toISOString()
+      const altText = file.name || 'Uploaded Photo'
 
-      setPhotos((prev) => [newPhoto, ...prev])
+      // Simpan langsung ke Supabase
+      const { data, error } = await supabase
+        .from('user_photos')
+        .insert([{ src: base64String, alt: altText, at: nowIso }])
+        .select()
+        .single()
 
-      try {
-        await supabase.from('user_photos').insert([
-          { src: base64String, alt: newPhoto.alt, at: newPhoto.at }
-        ])
-      } catch {
-        // Fallback lokal
+      if (!error && data) {
+        const newPhoto: PhotoItem = {
+          id: data.id,
+          src: data.src,
+          alt: data.alt,
+          type: 'image',
+          at: data.created_at || data.at,
+        }
+        setPhotos((prev) => [newPhoto, ...prev])
+      } else {
+        // Fallback lokal jika ada kendala jaringan
+        const tempPhoto: PhotoItem = {
+          id: `uploaded-${Date.now()}`,
+          src: base64String,
+          alt: altText,
+          type: 'image',
+          at: nowIso,
+        }
+        setPhotos((prev) => [tempPhoto, ...prev])
       }
     }
 
     reader.readAsDataURL(file)
   }
 
-  // Fungsi Hapus Foto
-  const handleDeletePhoto = (id: string) => {
-    const updatedPhotos = photos.filter((p) => p.id !== id)
-    setPhotos(updatedPhotos)
-    setOpenIndex(null) // Tutup viewer setelah foto dihapus
+  // Fungsi Hapus Foto dari Supabase & State
+  const handleDeletePhoto = async (id: string) => {
+    setPhotos(photos.filter((p) => p.id !== id))
+    setOpenIndex(null)
+
+    await supabase.from('user_photos').delete().eq('id', id)
   }
 
   return (
@@ -130,7 +168,7 @@ export function PhotosApp() {
             </h2>
 
             <p className="text-[13px] text-black/50">
-              {`Koleksi Pribadi · ${photos.length} Photos`}
+              {loading ? 'Memuat foto...' : `Koleksi Pribadi · ${photos.length} Photos`}
             </p>
           </div>
 
@@ -150,39 +188,47 @@ export function PhotosApp() {
           </span>
         </header>
 
-        <ul className="grid grid-cols-3 gap-[2px]">
-          {photos.map((p, i) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                onClick={() => setOpenIndex(i)}
-                aria-label={`View photo from ${formatPhotoDate(p.at)}`}
-                className="block aspect-square w-full overflow-hidden bg-[#eee] active:opacity-80 relative"
-              >
-                {p.type === 'video' ? (
-                  <video
-                    src={p.src}
-                    className="size-full object-cover pointer-events-none"
-                    muted
-                    playsInline
-                  />
-                ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={p.src}
-                    alt={p.alt}
-                    className="size-full object-cover"
-                    loading="lazy"
-                  />
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <p className="mt-10 text-center text-xs text-gray-400">Memuat galeri...</p>
+        ) : photos.length === 0 ? (
+          <p className="mt-10 text-center text-xs text-gray-400">Belum ada foto. Klik tombol (+) di atas untuk upload!</p>
+        ) : (
+          <ul className="grid grid-cols-3 gap-[2px]">
+            {photos.map((p, i) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(i)}
+                  aria-label={`View photo from ${formatPhotoDate(p.at)}`}
+                  className="block aspect-square w-full overflow-hidden bg-[#eee] active:opacity-80 relative"
+                >
+                  {p.type === 'video' ? (
+                    <video
+                      src={p.src}
+                      className="size-full object-cover pointer-events-none"
+                      muted
+                      playsInline
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={p.src}
+                      alt={p.alt}
+                      className="size-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
 
-        <p className="py-6 text-center text-[13px] text-black/45">
-          {`${photos.length} Photos`}
-        </p>
+        {!loading && photos.length > 0 && (
+          <p className="py-6 text-center text-[13px] text-black/45">
+            {`${photos.length} Photos`}
+          </p>
+        )}
       </div>
 
       <nav
@@ -406,7 +452,6 @@ function Viewer({
           <Share className="size-6 cursor-pointer" strokeWidth={1.7} />
           <Heart className="size-6 cursor-pointer" strokeWidth={1.7} />
           <Info className="size-6 cursor-pointer" strokeWidth={1.7} />
-          {/* Tombol Delete yang Aktif */}
           <button 
             type="button" 
             onClick={onDelete} 
