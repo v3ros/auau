@@ -26,7 +26,7 @@ const PAGE_ONE: HomeApp[] = [
   { kind: 'voicememos', app: 'voicememos', label: ' ' },
   {
     kind: 'youtube',
-    href: 'https://www.youtube.com/live/PBnQ4EaVAA0?si=C6WODdSMU5_eZyab',
+    href: 'https://www.youtube.com/',
     label: '',
   },
 ]
@@ -68,7 +68,7 @@ export function HomeScreen() {
       app === 'calendar' ||
       app === 'kakao' ||
       app === 'camera' ||
-      app === 'notes'
+      app === 'notes' 
     ) {
       openApp(app)
     }

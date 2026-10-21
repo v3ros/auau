@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Search, SquarePen, Trash2 } from 'lucide-react'
+import { ChevronLeft, Search, SquarePen, Trash2, Bookmark } from 'lucide-react'
 import { HomeIndicator, StatusBar } from '@/components/phone/chrome'
 import { useBackHandler } from '@/lib/story/back-nav'
 import { supabase } from '@/lib/supabase'
@@ -10,10 +10,21 @@ type Note = {
   id: string
   title: string
   content: string
+  color: string
   created_at: string
 }
 
-// Helper Format Tanggal WIB Accurate
+// Pilihan warna bookmark untuk menandai pembuat/kategori
+const COLOR_OPTIONS = [
+  { name: 'Kuning (Default)', value: '#e5a500' },
+  { name: 'Biru', value: '#007aff' },
+  { name: 'Merah', value: '#ff3b30' },
+  { name: 'Hijau', value: '#34c759' },
+  { name: 'Ungu', value: '#af52de' },
+  { name: 'Oranye', value: '#ff9500' },
+]
+
+// Helper Format Tanggal WIB
 const formatWIB = (dateString: string, detailed = false) => {
   if (!dateString) return ''
   const utcString = dateString.endsWith('Z') || dateString.includes('+') 
@@ -69,9 +80,10 @@ export function NotesApp() {
   useBackHandler(!!openId, () => setOpenId(null))
 
   const handleCreate = async () => {
+    const defaultColor = '#e5a500'
     const { data, error } = await supabase
       .from('notes')
-      .insert([{ title: 'Catatan Baru', content: '' }])
+      .insert([{ title: 'Catatan Baru', content: '', color: defaultColor }])
       .select()
       .single()
 
@@ -81,12 +93,12 @@ export function NotesApp() {
     }
   }
 
-  const handleUpdate = async (id: string, title: string, content: string) => {
-    setNotes(notes.map((n) => (n.id === id ? { ...n, title, content } : n)))
+  const handleUpdate = async (id: string, title: string, content: string, color: string) => {
+    setNotes(notes.map((n) => (n.id === id ? { ...n, title, content, color } : n)))
 
     await supabase
       .from('notes')
-      .update({ title, content })
+      .update({ title, content, color })
       .eq('id', id)
   }
 
@@ -104,7 +116,7 @@ export function NotesApp() {
         <NoteDetail 
           note={activeNote} 
           onBack={() => setOpenId(null)} 
-          onUpdate={(title, content) => handleUpdate(activeNote.id, title, content)}
+          onUpdate={(title, content, color) => handleUpdate(activeNote.id, title, content, color)}
           onDelete={() => handleDelete(activeNote.id)}
         />
       ) : (
@@ -141,28 +153,36 @@ function NoteList({
         </div>
 
         {loading ? (
-          <p className="text-center text-xs text-gray-400 mt-10">Memuat catatan...</p>
+          <p className="mt-10 text-center text-xs text-gray-400">Memuat catatan...</p>
         ) : notes.length === 0 ? (
-          <p className="text-center text-xs text-gray-400 mt-10">Belum ada catatan. Klik ikon pensil di bawah untuk membuat baru!</p>
+          <p className="mt-10 text-center text-xs text-gray-400">Belum ada catatan. Klik ikon pensil di bawah untuk membuat baru!</p>
         ) : (
           <ul className="mt-5 overflow-hidden rounded-[12px] bg-white">
             {notes.map((n, i) => {
               const preview = n.content.split('\n').filter(Boolean)[0] ?? ''
+              const bookmarkColor = n.color || '#e5a500'
 
               return (
                 <li key={n.id} className={i > 0 ? 'ml-4 border-t border-black/10' : undefined}>
                   <button 
                     type="button" 
                     onClick={() => onOpen(n.id)} 
-                    className="w-full py-2.5 pr-4 text-left active:bg-black/5 [&:not(:first-child)]:pl-0"
+                    className="flex w-full items-center justify-between py-2.5 pr-4 text-left active:bg-black/5 [&:not(:first-child)]:pl-0"
                   >
-                    <span className={i === 0 ? 'block px-4' : 'block'}>
+                    <span className={i === 0 ? 'block flex-1 px-4' : 'block flex-1'}>
                       <span className="block truncate text-[16px] font-semibold">{n.title || 'Tanpa Judul'}</span>
                       <span className="mt-0.5 flex gap-2 text-[14px] text-black/45">
                         <span className="shrink-0">{formatWIB(n.created_at)}</span>
                         <span className="truncate">{preview}</span>
                       </span>
                     </span>
+
+                    <div className="ml-2 shrink-0 pr-1">
+                      <Bookmark 
+                        className="size-5 fill-current transition-colors" 
+                        style={{ color: bookmarkColor }} 
+                      />
+                    </div>
                   </button>
                 </li>
               )
@@ -171,10 +191,10 @@ function NoteList({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center justify-between px-5 py-2 bg-[#f2f2f7]">
+      <div className="flex shrink-0 items-center justify-between bg-[#f2f2f7] px-5 py-2">
         <span className="w-6" />
         <span className="text-[12px] text-black/60">{`${notes.length} Notes`}</span>
-        <button type="button" onClick={onCreate} className="hover:opacity-80 active:scale-95 transition-all">
+        <button type="button" onClick={onCreate} className="transition-all hover:opacity-80 active:scale-95">
           <SquarePen className="size-6 text-[#e5a500]" aria-hidden />
         </button>
       </div>
@@ -190,20 +210,26 @@ function NoteDetail({
 }: { 
   note: Note
   onBack: () => void
-  onUpdate: (title: string, content: string) => void
+  onUpdate: (title: string, content: string, color: string) => void
   onDelete: () => void
 }) {
   const [title, setTitle] = useState(note.title)
   const [content, setContent] = useState(note.content)
+  const [color, setColor] = useState(note.color || '#e5a500')
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle)
-    onUpdate(newTitle, content)
+    onUpdate(newTitle, content, color)
   }
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent)
-    onUpdate(title, newContent)
+    onUpdate(title, newContent, color)
+  }
+
+  const handleColorSelect = (selectedColor: string) => {
+    setColor(selectedColor)
+    onUpdate(title, content, selectedColor)
   }
 
   return (
@@ -218,22 +244,40 @@ function NoteDetail({
         </button>
       </div>
 
-      <article className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-6 flex flex-col">
-        <p className="text-center text-[12px] text-black/40 mb-3">{formatWIB(note.created_at, true)}</p>
+      <article className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-6">
+        <p className="mb-2 text-center text-[12px] text-black/40">{formatWIB(note.created_at, true)}</p>
         
+        {/* Menu Pilih Warna Penanda */}
+        <div className="mb-4 flex items-center justify-center gap-2.5 rounded-full bg-gray-100/80 px-3 py-1.5 self-center">
+          {COLOR_OPTIONS.map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              title={c.name}
+              onClick={() => handleColorSelect(c.value)}
+              className={`size-4 rounded-full transition-all ${
+                color === c.value 
+                  ? 'ring-2 ring-black/70 ring-offset-2 ring-offset-gray-100' 
+                  : 'opacity-70 hover:opacity-100'
+              }`}
+              style={{ backgroundColor: c.value }}
+            />
+          ))}
+        </div>
+
         <input 
           type="text"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
           placeholder="Judul Catatan"
-          className="text-[24px] font-bold outline-none border-b border-gray-100 pb-2 mb-3 bg-transparent"
+          className="mb-3 border-b border-gray-100 bg-transparent pb-2 text-[24px] font-bold outline-none"
         />
 
         <textarea 
           value={content}
           onChange={(e) => handleContentChange(e.target.value)}
           placeholder="Mulai ketik catatan..."
-          className="w-full flex-1 resize-none outline-none text-[17px] leading-relaxed bg-transparent"
+          className="no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full flex-1 resize-none bg-transparent text-[17px] leading-relaxed outline-none"
         />
       </article>
     </div>

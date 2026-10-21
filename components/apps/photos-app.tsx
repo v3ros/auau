@@ -8,45 +8,116 @@ import {
   Ellipsis,
   Heart,
   Info,
+  Plus,
   Search,
   Share,
   Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HomeIndicator, StatusBar } from '@/components/phone/chrome'
-import { photos } from '@/lib/story/photos'
+import { photos as initialPhotos } from '@/lib/story/photos'
+import { supabase } from '@/lib/supabase'
+
+type PhotoItem = {
+  id: string
+  src: string
+  alt: string
+  type?: 'image' | 'video'
+  at: string
+}
 
 function formatPhotoDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Jakarta',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(iso))
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(iso))
+  } catch {
+    return 'Hari ini'
+  }
 }
 
 function formatPhotoTime(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Jakarta',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).format(new Date(iso))
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      timeZone: 'Asia/Jakarta',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).format(new Date(iso))
+  } catch {
+    return ''
+  }
 }
 
 export function PhotosApp() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [photos, setPhotos] = useState<PhotoItem[]>(() => {
+    return initialPhotos.map(p => ({ ...p, type: p.type as 'image' | 'video' }))
+  })
+  
   useBackHandler(openIndex !== null, () => setOpenIndex(null))
 
   const gridRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useLayoutEffect(() => {
     const el = gridRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [])
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const file = files[0]
+    const reader = new FileReader()
+
+    reader.onload = async (uploadEvent) => {
+      const base64String = uploadEvent.target?.result as string
+      if (!base64String) return
+
+      const newPhoto: PhotoItem = {
+        id: `uploaded-${Date.now()}`,
+        src: base64String,
+        alt: file.name || 'User Uploaded Photo',
+        type: 'image',
+        at: new Date().toISOString(),
+      }
+
+      setPhotos((prev) => [newPhoto, ...prev])
+
+      try {
+        await supabase.from('user_photos').insert([
+          { src: base64String, alt: newPhoto.alt, at: newPhoto.at }
+        ])
+      } catch {
+        // Fallback lokal
+      }
+    }
+
+    reader.readAsDataURL(file)
+  }
+
+  // Fungsi Hapus Foto
+  const handleDeletePhoto = (id: string) => {
+    const updatedPhotos = photos.filter((p) => p.id !== id)
+    setPhotos(updatedPhotos)
+    setOpenIndex(null) // Tutup viewer setelah foto dihapus
+  }
+
   return (
     <div className="relative flex h-full flex-col bg-white text-black">
       <StatusBar />
+
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+        accept="image/*" 
+        className="hidden" 
+      />
 
       <div
         ref={gridRef}
@@ -59,17 +130,22 @@ export function PhotosApp() {
             </h2>
 
             <p className="text-[13px] text-black/50">
-              {`September – November 2025 · ${photos.length} Photos`}
+              {`Koleksi Pribadi · ${photos.length} Photos`}
             </p>
           </div>
 
           <span className="flex items-center gap-2" aria-hidden>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex size-9 items-center justify-center rounded-full bg-[#007aff] text-white active:scale-95 transition-transform shadow-sm"
+              title="Upload Foto"
+            >
+              <Plus className="size-5" />
+            </button>
+
             <span className="flex size-9 items-center justify-center rounded-full bg-black/[0.06]">
               <Search className="size-[18px]" />
-            </span>
-
-            <span className="rounded-full bg-black/[0.06] px-3.5 py-2 text-[14px] font-semibold">
-              Select
             </span>
           </span>
         </header>
@@ -128,11 +204,14 @@ export function PhotosApp() {
 
       <HomeIndicator />
 
-      {openIndex !== null && (
+      {openIndex !== null && photos[openIndex] && (
         <Viewer
+          photo={photos[openIndex]}
+          photos={photos}
           index={openIndex}
           onChange={setOpenIndex}
           onClose={() => setOpenIndex(null)}
+          onDelete={() => handleDeletePhoto(photos[openIndex].id)}
         />
       )}
     </div>
@@ -140,15 +219,20 @@ export function PhotosApp() {
 }
 
 function Viewer({
+  photo,
+  photos,
   index,
   onChange,
   onClose,
+  onDelete,
 }: {
+  photo: PhotoItem
+  photos: PhotoItem[]
   index: number
   onChange: (i: number) => void
   onClose: () => void
+  onDelete: () => void
 }) {
-  const photo = photos[index]
   const startX = useRef<number | null>(null)
   const [chrome, setChrome] = useState(true)
 
@@ -165,9 +249,10 @@ function Viewer({
     }
 
     window.addEventListener('keydown', onKey)
-
     return () => window.removeEventListener('keydown', onKey)
   }, [index, onChange, onClose])
+
+  if (!photo) return null
 
   return (
     <div
@@ -303,21 +388,12 @@ function Viewer({
                   i === index ? 'mx-1 w-7' : 'w-5 opacity-80',
                 )}
               >
-                {p.type === 'video' ? (
-                  <video
-                    src={p.src}
-                    className="size-full object-cover pointer-events-none"
-                    muted
-                    playsInline
-                  />
-                ) : (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
-                    src={p.src}
-                    alt=""
-                    className="size-full object-cover"
-                  />
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={p.src}
+                  alt=""
+                  className="size-full object-cover"
+                />
               </button>
             </li>
           ))}
@@ -327,10 +403,18 @@ function Viewer({
           className="flex items-center justify-between px-6 pb-1 pt-1 text-[#007aff]"
           aria-hidden
         >
-          <Share className="size-6" strokeWidth={1.7} />
-          <Heart className="size-6" strokeWidth={1.7} />
-          <Info className="size-6" strokeWidth={1.7} />
-          <Trash2 className="size-6" strokeWidth={1.7} />
+          <Share className="size-6 cursor-pointer" strokeWidth={1.7} />
+          <Heart className="size-6 cursor-pointer" strokeWidth={1.7} />
+          <Info className="size-6 cursor-pointer" strokeWidth={1.7} />
+          {/* Tombol Delete yang Aktif */}
+          <button 
+            type="button" 
+            onClick={onDelete} 
+            className="text-red-500 hover:opacity-85 transition-opacity"
+            title="Hapus Foto"
+          >
+            <Trash2 className="size-6" strokeWidth={1.7} />
+          </button>
         </div>
 
         <HomeIndicator
