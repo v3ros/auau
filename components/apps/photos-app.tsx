@@ -50,6 +50,45 @@ function formatPhotoTime(iso: string) {
   }
 }
 
+// Fungsi pembantu untuk kompres & resize gambar otomatis agar database tidak cepat penuh
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target?.result as string
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1080 // Batas maksimal lebar gambar
+        let width = img.width
+        let height = img.height
+
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width)
+          width = MAX_WIDTH
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+
+        // Ekspor ke format JPEG dengan kualitas 75% (ukuran file turun drastis, kualitas tetap tajam)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75)
+        resolve(compressedBase64)
+      }
+
+      img.onerror = (error) => reject(error)
+    }
+
+    reader.onerror = (error) => reject(error)
+  })
+}
+
 export function PhotosApp() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [photos, setPhotos] = useState<PhotoItem[]>([])
@@ -89,24 +128,21 @@ export function PhotosApp() {
     if (el) el.scrollTop = el.scrollHeight
   }, [photos])
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
 
     const file = files[0]
-    const reader = new FileReader()
 
-    reader.onload = async (uploadEvent) => {
-      const base64String = uploadEvent.target?.result as string
-      if (!base64String) return
-
+    try {
+      // 1. Kompres gambar sebelum di-upload
+      const compressedBase64 = await compressImage(file)
       const altText = file.name || 'Uploaded Photo'
 
-      // Masukkan data hanya dengan kolom yang wajib (src dan alt)
-      // Supabase otomatis akan mengisi id dan created_at
+      // 2. Kirim hasil kompresi ke Supabase
       const { data, error } = await supabase
         .from('user_photos')
-        .insert([{ src: base64String, alt: altText }])
+        .insert([{ src: compressedBase64, alt: altText }])
         .select()
         .single()
 
@@ -123,9 +159,10 @@ export function PhotosApp() {
         console.error('Error insert foto:', error)
         alert('Gagal mengunggah foto ke database.')
       }
+    } catch (err) {
+      console.error('Gagal memproses gambar:', err)
+      alert('Gagal mengompres gambar.')
     }
-
-    reader.readAsDataURL(file)
   }
 
   const handleDeletePhoto = async (id: string) => {
@@ -158,7 +195,7 @@ export function PhotosApp() {
             </h2>
 
             <p className="text-[13px] text-black/50">
-              {loading ? 'Memuat foto...' : `Koleksi Pribadi · ${photos.length} Photos`}
+              {loading ? 'Loading gallery...' : `Personal Collection · ${photos.length} Photos`}
             </p>
           </div>
 
