@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { useStory } from '@/lib/story/store'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 function SignalBars() {
   return (
@@ -24,23 +24,17 @@ function WifiGlyph() {
   )
 }
 
-/** Indikator Baterai iOS yang Lebih Akurat & Mirip Asli */
 function BatteryGlyph({ percentage = 85 }: { percentage?: number }) {
   return (
     <div className="flex items-center gap-[4px]" aria-hidden>
-      {/* Persentase Teks di Luar (Gaya iOS) */}
       <span className="text-[12px] font-semibold tracking-tight">{percentage}%</span>
-      
-      {/* Bodi Baterai */}
       <span className="flex items-center">
         <span className="relative flex h-[11.5px] w-[22px] rounded-[3.5px] border border-current p-[1.5px]">
-          {/* Level Isi Baterai */}
           <span 
             className="h-full rounded-[1.5px] bg-current transition-all"
             style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }} 
           />
         </span>
-        {/* Tip/Nipple Baterai Kanan */}
         <span className="h-[4px] w-[1.5px] rounded-r-[1px] bg-current opacity-60" />
       </span>
     </div>
@@ -53,7 +47,6 @@ export function StatusBar({ tone = 'dark', className }: { tone?: 'dark' | 'light
   useEffect(() => {
     const updateTime = () => {
       const now = new Date()
-      // Mengambil Jam WIB (Asia/Jakarta)
       const timeString = now.toLocaleTimeString('id-ID', {
         timeZone: 'Asia/Jakarta',
         hour: '2-digit',
@@ -77,22 +70,19 @@ export function StatusBar({ tone = 'dark', className }: { tone?: 'dark' | 'light
         className,
       )}
     >
-      {/* Jam Real-time Jakarta */}
       <span className="w-14 text-center tabular-nums tracking-tight font-bold">
         {realTimeClock || '16:41'}
       </span>
 
-      {/* Dynamic Island / Notch */}
       <span
         className="absolute left-1/2 top-[11px] hidden h-[30px] w-[110px] -translate-x-1/2 rounded-full bg-black sm:block"
         aria-hidden
       />
 
-      {/* Ikon Sinyal, Wi-Fi & Baterai iOS */}
-      <span className="flex items-center gap-[7px]" aria-label="Signal, Wi-Fi, Battery 85%">
+      <span className="flex items-center gap-[7px]" aria-label="Signal, Wi-Fi, Battery">
         <SignalBars />
         <WifiGlyph />
-        <BatteryGlyph percentage={12} />
+        <BatteryGlyph percentage={85} />
       </span>
     </div>
   )
@@ -101,24 +91,64 @@ export function StatusBar({ tone = 'dark', className }: { tone?: 'dark' | 'light
 export function HomeIndicator({
   tone = 'dark',
   onActivate,
+  onBack,
   label = 'Home',
   className,
 }: {
   tone?: 'dark' | 'light'
   onActivate?: () => void
+  onBack?: () => void
   label?: string
   className?: string
 }) {
   const { goHome } = useStory()
+  const startPos = useRef<{ x: number; y: number } | null>(null)
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    startPos.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!startPos.current) return
+
+    const dx = e.clientX - startPos.current.x
+    const dy = e.clientY - startPos.current.y
+    startPos.current = null
+
+    const absDx = Math.abs(dx)
+    const absDy = Math.abs(dy)
+
+    if (absDy > absDx && dy < -40) {
+      // Swipe ke Atas -> Home
+      if (onActivate) onActivate()
+      else goHome()
+    } else if (absDx > absDy && absDx > 40) {
+      // Swipe ke Kanan/Kiri -> Back
+      if (onBack) {
+        onBack()
+      } else {
+        window.history.back()
+      }
+    }
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onActivate ?? goHome}
+    <div
       aria-label={label}
-      className={cn('flex h-[26px] w-full shrink-0 items-center justify-center', className)}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      className={cn(
+        'absolute inset-x-0 bottom-0 z-30 flex h-7 cursor-grab active:cursor-grabbing items-center justify-center pb-1 touch-none',
+        className
+      )}
     >
-      <span className={cn('h-[5px] w-[136px] rounded-full', tone === 'dark' ? 'bg-black' : 'bg-white')} />
-    </button>
+      <div
+        className={cn(
+          'h-[5px] w-[134px] rounded-full transition-colors',
+          tone === 'dark' ? 'bg-black/40 hover:bg-black/70' : 'bg-white/50 hover:bg-white/80',
+        )}
+      />
+    </div>
   )
 }
 
@@ -139,10 +169,10 @@ export function AppShell({
   bodyRef?: React.Ref<HTMLDivElement>
 }) {
   return (
-    <div className={cn('flex h-full w-full flex-col bg-white text-black', className)}>
+    <div className={cn('flex h-full w-full flex-col bg-white text-black relative', className)}>
       <StatusBar />
       {header}
-      <div ref={bodyRef} className={cn('no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain', bodyClassName)}>
+      <div ref={bodyRef} className={cn('no-scrollbar min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain pb-6', bodyClassName)}>
         {children}
       </div>
       {footer}

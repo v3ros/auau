@@ -35,6 +35,7 @@ export type AppId =
   | 'voicememos'
   | 'calendar'
   | 'clock'
+  | 'calculator'
 
 export type Screen =
   | { kind: 'lock' }

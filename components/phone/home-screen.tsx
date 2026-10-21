@@ -9,7 +9,7 @@ import { HomeIndicator, StatusBar } from './chrome'
 import { CalendarWidget, WeatherWidget } from './widgets'
 
 type HomeApp = {
-  kind: IconKind
+  kind: IconKind | 'calculator'
   label: string
   app?: AppId
   href?: string
@@ -23,6 +23,7 @@ const PAGE_ONE: HomeApp[] = [
   { kind: 'notes', app: 'notes', label: '' },
   { kind: 'calendar', app: 'calendar', label: '' },
   { kind: 'clock', app: 'clock', label: '' },
+  { kind: 'calculator', app: 'calculator' as AppId, label: '' },
   { kind: 'voicememos', app: 'voicememos', label: ' ' },
   {
     kind: 'youtube',
@@ -56,6 +57,19 @@ function XIcon() {
   )
 }
 
+function CalculatorIcon() {
+  return (
+    <span className="flex size-full items-center justify-center overflow-hidden rounded-[22%] bg-zinc-900 shadow-md">
+      <div className="grid grid-cols-2 gap-1 p-2.5 size-full bg-gradient-to-br from-zinc-800 to-black">
+        <span className="flex items-center justify-center rounded-md bg-orange-500 text-white font-bold text-[13px]">+</span>
+        <span className="flex items-center justify-center rounded-md bg-zinc-700 text-white font-bold text-[13px]">-</span>
+        <span className="flex items-center justify-center rounded-md bg-zinc-700 text-white font-bold text-[13px]">×</span>
+        <span className="flex items-center justify-center rounded-md bg-orange-500 text-white font-bold text-[13px]">=</span>
+      </div>
+    </span>
+  )
+}
+
 export function HomeScreen() {
   const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
@@ -68,7 +82,8 @@ export function HomeScreen() {
       app === 'calendar' ||
       app === 'kakao' ||
       app === 'camera' ||
-      app === 'notes' 
+      app === 'notes' ||
+      app === ('calculator' as AppId)
     ) {
       openApp(app)
     }
@@ -183,7 +198,7 @@ export function HomeScreen() {
               aria-label={d.label}
               className="mx-auto block aspect-square w-full max-w-[64px] active:opacity-70"
             >
-              <AppGlyph kind={d.kind} />
+              <AppGlyph kind={d.kind as IconKind} />
             </button>
           ))}
         </nav>
@@ -215,8 +230,10 @@ function AppGrid({
             <span className="relative block aspect-square w-full max-w-[64px]">
               {a.kind === 'kakao' ? (
                 <XIcon />
+              ) : a.kind === 'calculator' ? (
+                <CalculatorIcon />
               ) : (
-                <AppGlyph kind={a.kind} />
+                <AppGlyph kind={a.kind as IconKind} />
               )}
             </span>
 

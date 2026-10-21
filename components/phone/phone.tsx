@@ -13,6 +13,7 @@ import { CameraApp } from '@/components/apps/camera-app'
 import { VoiceMemosApp } from '@/components/apps/voice-memos-app'
 import { CalendarApp } from '@/components/apps/calendar-app'
 import { ClockApp } from '@/components/apps/clock-app'
+import { CalculatorApp } from '@/components/apps/calculator-app' // <-- Tambahkan ini
 import { LockScreen } from './lock-screen'
 import { Passcode } from './passcode'
 import { HomeScreen } from './home-screen'
@@ -35,6 +36,7 @@ const APPS: Record<AppId, () => React.ReactNode> = {
   voicememos: () => <VoiceMemosApp />,
   calendar: () => <CalendarApp />,
   clock: () => <ClockApp />,
+  calculator: () => <CalculatorApp />, // <-- Daftarkan di sini
 }
 
 function Screens() {
