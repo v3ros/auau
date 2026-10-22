@@ -147,14 +147,14 @@ export function HomeScreen() {
       if (typeof lock === 'function') {
         lock()
       }
-    }, 300)
+    }, 200)
   }
 
   return (
     <div
       className={cn(
-        "animate-screen-in absolute inset-0 flex flex-col bg-cover bg-center text-white select-none transition-all duration-300 ease-out",
-        isLocking ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"
+        "absolute inset-0 flex flex-col bg-cover bg-center text-white select-none transition-opacity duration-200 ease-out",
+        isLocking ? "opacity-0" : "opacity-100"
       )}
       style={{
         backgroundImage: `url(${wallpaperUrl})`,

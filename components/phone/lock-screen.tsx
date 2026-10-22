@@ -52,7 +52,6 @@ export function LockScreen() {
     const updateDateTime = () => {
       const now = new Date()
 
-      // 1. Format Tanggal (English)
       const dateString = now.toLocaleDateString('en-US', {
         timeZone: 'Asia/Jakarta',
         weekday: 'long',
@@ -61,7 +60,6 @@ export function LockScreen() {
       })
       setFormattedDate(dateString)
 
-      // 2. Format Jam Real-Time WIB (24 Jam)
       const timeString = now.toLocaleTimeString('id-ID', {
         timeZone: 'Asia/Jakarta',
         hour: '2-digit',
@@ -86,14 +84,14 @@ export function LockScreen() {
     setIsLeaving(true)
     setTimeout(() => {
       openPasscode()
-    }, 300)
+    }, 200)
   }
 
   return (
     <div
       className={cn(
-        "absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white transition-all duration-300 ease-out",
-        isLeaving ? "opacity-0 scale-105" : "opacity-100 scale-100"
+        "absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white transition-opacity duration-200 ease-out",
+        isLeaving ? "opacity-0" : "opacity-100"
       )}
       style={{ backgroundImage: `url(${wallpaperUrl})` }}
       onPointerDown={(e) => (startY.current = e.clientY)}
@@ -104,7 +102,6 @@ export function LockScreen() {
         startY.current = null
       }}
     >
-      {/* Lapisan Gelap Transparan (Overlay) agar sama dengan Home Screen */}
       <div className="absolute inset-0 bg-black/5 backdrop-brightness-90 pointer-events-none" />
 
       <div className="relative z-10 flex h-full flex-col">
@@ -112,12 +109,10 @@ export function LockScreen() {
         <div className="flex flex-col items-center">
           <Lock className="size-[18px]" strokeWidth={2.5} aria-hidden />
           
-          {/* TANGGAL */}
           <p className="mt-2 text-[20px] font-semibold text-white/90">
             {formattedDate || 'Tuesday, October 20'}
           </p>
           
-          {/* JAM REAL-TIME WIB */}
           <p
             className="-mt-1 text-[104px] font-semibold leading-[1.05] tracking-[-0.03em] tabular-nums text-white/90"
             style={{ fontFamily: 'ui-rounded, "SF Pro Rounded", -apple-system, var(--font-noto), sans-serif' }}
