@@ -22,7 +22,7 @@ type HomeApp = {
 }
 
 const PAGE_ONE: HomeApp[] = [
-  { kind: 'settings', app: 'settings', label: 'Settings' },
+  { kind: 'settings', app: 'settings', label: '' },
   { kind: 'kakao', app: 'kakao', label: '' },
   { kind: 'anyai', app: 'anyai', label: '' },
   { kind: 'photos', app: 'photos', label: '' },
