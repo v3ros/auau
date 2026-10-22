@@ -5,6 +5,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useStory } from '@/lib/story/store'
 import { HomeIndicator, StatusBar } from './chrome'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 const PASSCODE = '0000'
 const KEYS: { digit: string; letters: string }[] = [
@@ -23,6 +29,39 @@ export function Passcode() {
   const { unlock, lock } = useStory()
   const [code, setCode] = useState('')
   const [shake, setShake] = useState(false)
+  const [wallpaperUrl, setWallpaperUrl] = useState<string>(withBasePath('/images/wallpaper.jpg'))
+
+  useEffect(() => {
+    const fetchWallpaper = async () => {
+      const { data } = await supabase
+        .from('app_config')
+        .select('value')
+        .eq('key', 'wallpaper_url')
+        .single()
+      if (data?.value) {
+        setWallpaperUrl(data.value)
+      }
+    }
+
+    fetchWallpaper()
+
+    const channel = supabase
+      .channel('public:app_config_passcode')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'key=eq.wallpaper_url' },
+        (payload) => {
+          if (payload.new?.value) {
+            setWallpaperUrl(payload.new.value)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   const press = useCallback(
     (d: string) => {
@@ -62,7 +101,7 @@ export function Passcode() {
   return (
     <div
       className="absolute inset-0 flex flex-col bg-cover bg-center text-white"
-      style={{ backgroundImage: `url(${withBasePath('/images/wallpaper.jpg')})` }}
+      style={{ backgroundImage: `url(${wallpaperUrl})` }}
     >
       <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" aria-hidden />
       <div className="relative flex h-full flex-col">
@@ -73,7 +112,7 @@ export function Passcode() {
             <div
               className={cn('flex gap-5', shake && 'animate-shake')}
               role="status"
-              aria-label={`${code.length}자리 입력됨`}
+              aria-label={`${code.length} digits entered`}
             >
               {[0, 1, 2, 3].map((i) => (
                 <span
@@ -100,7 +139,7 @@ export function Passcode() {
             Delete
           </button>
         </div>
-        <HomeIndicator tone="light" onActivate={lock} label="잠금화면으로" />
+        <HomeIndicator tone="light" onActivate={lock} label="Lock Screen" />
       </div>
     </div>
   )
