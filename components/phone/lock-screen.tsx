@@ -1,11 +1,17 @@
 'use client'
 
-import { withBasePath } from '@/lib/base-path'
 import { useRef, useEffect, useState } from 'react'
+import { withBasePath } from '@/lib/base-path'
 import { Camera, Flashlight, Lock } from 'lucide-react'
 import { useStory } from '@/lib/story/store'
 import { HomeIndicator, StatusBar } from './chrome'
 import { cn } from '@/lib/utils'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export function LockScreen() {
   const { openPasscode } = useStory()
@@ -14,8 +20,35 @@ export function LockScreen() {
   const [formattedDate, setFormattedDate] = useState('')
   const [realTimeClock, setRealTimeClock] = useState('')
   const [isLeaving, setIsLeaving] = useState(false)
+  const [wallpaperUrl, setWallpaperUrl] = useState<string>(withBasePath('/images/wallpaper.jpg'))
 
   useEffect(() => {
+    const fetchWallpaper = async () => {
+      const { data } = await supabase
+        .from('app_config')
+        .select('value')
+        .eq('key', 'wallpaper_url')
+        .single()
+      if (data?.value) {
+        setWallpaperUrl(data.value)
+      }
+    }
+
+    fetchWallpaper()
+
+    const channel = supabase
+      .channel('public:app_config_lock')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'key=eq.wallpaper_url' },
+        (payload) => {
+          if (payload.new?.value) {
+            setWallpaperUrl(payload.new.value)
+          }
+        }
+      )
+      .subscribe()
+
     const updateDateTime = () => {
       const now = new Date()
 
@@ -41,7 +74,11 @@ export function LockScreen() {
 
     updateDateTime()
     const interval = setInterval(updateDateTime, 1000)
-    return () => clearInterval(interval)
+    
+    return () => {
+      clearInterval(interval)
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const handleUnlock = () => {
@@ -58,7 +95,7 @@ export function LockScreen() {
         "absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white transition-all duration-300 ease-out",
         isLeaving ? "opacity-0 scale-105" : "opacity-100 scale-100"
       )}
-      style={{ backgroundImage: `url(${withBasePath('/images/wallpaper.jpg')})` }}
+      style={{ backgroundImage: `url(${wallpaperUrl})` }}
       onPointerDown={(e) => (startY.current = e.clientY)}
       onPointerUp={(e) => {
         if (startY.current !== null && startY.current - e.clientY > 60) {
