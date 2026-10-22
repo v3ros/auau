@@ -22,6 +22,7 @@ import { IncomingCall } from './incoming-call'
 import { OutgoingCall } from './outgoing-call'
 import { TopNav } from './top-nav'
 import { BackNavProvider } from '@/lib/story/back-nav'
+import { WeatherApp } from '@/components/apps/weather-app'
 
 const APPS: Record<AppId, () => React.ReactNode> = {
   kakao: () => <KakaoApp />,
@@ -37,6 +38,7 @@ const APPS: Record<AppId, () => React.ReactNode> = {
   calendar: () => <CalendarApp />,
   clock: () => <ClockApp />,
   calculator: () => <CalculatorApp />, // <-- Daftarkan di sini
+  weather: WeatherApp,
 }
 
 function Screens() {

@@ -21,7 +21,7 @@ export function LockScreen() {
 
       // 1. Format Tanggal (English)
       const dateString = now.toLocaleDateString('en-US', {
-        timeZone: 'Asia/Jakarta', // Memastikan zona waktu WIB
+        timeZone: 'Asia/Jakarta',
         weekday: 'long',
         month: 'long',
         day: 'numeric',
@@ -30,17 +30,17 @@ export function LockScreen() {
 
       // 2. Format Jam Real-Time WIB (24 Jam)
       const timeString = now.toLocaleTimeString('id-ID', {
-        timeZone: 'Asia/Jakarta', // Memastikan zona waktu WIB
+        timeZone: 'Asia/Jakarta',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-      }).replace('.', ':') // Mengubah separator titik ke titik dua
+      }).replace('.', ':')
 
       setRealTimeClock(timeString)
     }
 
     updateDateTime()
-    const interval = setInterval(updateDateTime, 1000) // Update tiap detik
+    const interval = setInterval(updateDateTime, 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -49,7 +49,7 @@ export function LockScreen() {
     setIsLeaving(true)
     setTimeout(() => {
       openPasscode()
-    }, 300) // Durasi transisi (dalam milidetik) sebelum membuka passcode
+    }, 300)
   }
 
   return (
@@ -67,7 +67,10 @@ export function LockScreen() {
         startY.current = null
       }}
     >
-      <div className="relative flex h-full flex-col">
+      {/* Lapisan Gelap Transparan (Overlay) agar sama dengan Home Screen */}
+      <div className="absolute inset-0 bg-black/5 backdrop-brightness-90 pointer-events-none" />
+
+      <div className="relative z-10 flex h-full flex-col">
         <StatusBar tone="light" />
         <div className="flex flex-col items-center">
           <Lock className="size-[18px]" strokeWidth={2.5} aria-hidden />

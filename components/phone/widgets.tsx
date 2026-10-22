@@ -1,92 +1,113 @@
 'use client'
 
-import { Navigation, Sun } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Sun } from 'lucide-react'
 
-export function WeatherWidget() {
+// Style dasar Liquid Glass untuk Widget
+const widgetGlassBase =
+  'relative flex aspect-square w-full flex-col justify-between overflow-hidden rounded-[26px] bg-white/20 border border-white/40 p-3.5 text-white backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]'
+
+function GlassSheen() {
   return (
-    <section
-      aria-label="Jakarta Weather 28° Sunny"
-      className="flex aspect-square flex-col justify-between rounded-[22px] p-3.5 text-left text-white shadow-lg"
-      style={{ background: 'linear-gradient(160deg, #3d7fd6 0%, #6aa8ea 100%)' }}
-    >
-      <div>
-        <p className="flex items-center gap-1 text-sm font-semibold">
-          Jakarta <Navigation className="size-3 fill-white" aria-hidden />
-        </p>
-        <p className="text-[44px] font-light leading-none">28°</p>
-      </div>
-      <div>
-        <Sun className="size-5 fill-[#ffd94d] text-[#ffd94d]" aria-hidden />
-        <p className="mt-1 text-sm font-medium">Sunny</p>
-      </div>
-    </section>
+    <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
   )
 }
 
-// Inisial Hari Bahasa Inggris (Sunday, Monday, dst)
-const WEEK = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-
-export function CalendarWidget({ onOpen }: { onOpen?: () => void }) {
-  const [currentDate, setCurrentDate] = useState({
-    year: new Date().getFullYear(),
-    monthIndex: new Date().getMonth(),
-    today: new Date().getDate(),
-    monthName: new Date().toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-  })
+export function WeatherWidget({ onOpen }: { onOpen?: () => void }) {
+  const [temp, setTemp] = useState<number | null>(null)
+  const [condition, setCondition] = useState('Loading...')
 
   useEffect(() => {
-    const now = new Date()
-    setCurrentDate({
-      year: now.getFullYear(),
-      monthIndex: now.getMonth(),
-      today: now.getDate(),
-      monthName: now.toLocaleDateString('en-US', { month: 'short' }).toUpperCase(),
-    })
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2146&longitude=106.8451&current=temperature_2m,weather_code')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.current) {
+          setTemp(Math.round(data.current.temperature_2m))
+          const code = data.current.weather_code
+          if (code === 0) setCondition('Sunny')
+          else if (code >= 1 && code <= 3) setCondition('Partly Cloudy')
+          else if (code >= 51 && code <= 67) setCondition('Rainy')
+          else setCondition('Cloudy')
+        }
+      })
+      .catch(() => {
+        setTemp(28)
+        setCondition('Sunny')
+      })
   }, [])
 
-  const { year, monthIndex, today, monthName } = currentDate
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`${widgetGlassBase} text-left transition-all active:scale-95 cursor-pointer`}
+    >
+      <GlassSheen />
 
-  // Kalkulasi jumlah hari & posisi tanggal 1 untuk bulan berjalan secara otomatis
-  const firstDay = new Date(Date.UTC(year, monthIndex, 1)).getUTCDay()
-  const days = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate()
-  const cells: (number | null)[] = [
-    ...Array(firstDay).fill(null),
-    ...Array.from({ length: days }, (_, i) => i + 1),
+      <div className="z-0">
+        <div className="flex items-center justify-between">
+          <span className="text-[13px] font-semibold drop-shadow">Jakarta</span>
+        </div>
+        <span className="text-[34px] font-light leading-none tracking-tight drop-shadow">
+          {temp !== null ? `${temp}°` : '...'}
+        </span>
+      </div>
+
+      <div className="z-0 flex items-center gap-1.5 text-[12px] font-medium drop-shadow">
+        <Sun className="size-4 text-yellow-300 fill-yellow-300/40" />
+        <span>{condition}</span>
+      </div>
+    </button>
+  )
+}
+
+export function CalendarWidget({ onOpen }: { onOpen?: () => void }) {
+  const now = new Date()
+  const month = now
+    .toLocaleDateString('en-US', { month: 'short' })
+    .toUpperCase()
+  const today = now.getDate()
+
+  const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+  
+  const firstDayIndex = new Date(now.getFullYear(), now.getMonth(), 1).getDay()
+  const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+
+  const daysGrid = [
+    ...Array(firstDayIndex).fill(null),
+    ...Array.from({ length: totalDays }, (_, i) => i + 1),
   ]
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      aria-label={`Open calendar, ${monthName} ${year}, today is ${today}`}
-      className="flex aspect-square flex-col rounded-[22px] bg-white p-3 text-left text-black shadow-lg transition-transform active:scale-[0.97]"
+      className={`${widgetGlassBase} text-left transition-all active:scale-95 cursor-pointer`}
     >
-      {/* Nama Bulan Dinamis Dalam Bahasa Inggris (Contoh: NOV / OCT) */}
-      <p className="text-[11px] font-bold text-[#ff3b30]">{monthName}</p>
+      <GlassSheen />
 
-      <div className="mt-1 grid flex-1 grid-cols-7 content-between text-center text-[9px] leading-[1.45]">
-        {/* Header Nama Hari (S M T W T F S) */}
-        {WEEK.map((w, i) => (
-          <span key={`${w}-${i}`} className={cn('font-semibold', i === 0 ? 'text-[#ff3b30]/70' : 'text-black/45')}>
-            {w}
-          </span>
+      <div className="z-0 flex items-center justify-between border-b border-white/20 pb-1">
+        <span className="text-[11px] font-bold text-red-400 drop-shadow">{month}</span>
+      </div>
+
+      <div className="z-0 grid grid-cols-7 text-center text-[9px] font-bold text-white/70">
+        {daysOfWeek.map((day, i) => (
+          <span key={i}>{day}</span>
         ))}
+      </div>
 
-        {/* Tanggal-tanggal di Kalender */}
-        {cells.map((d, i) => (
-          <span key={i} className="flex items-center justify-center">
-            {d && (
+      <div className="z-0 grid grid-cols-7 gap-y-0.5 text-center text-[10px] font-medium">
+        {daysGrid.slice(0, 28).map((day, i) => (
+          <span key={i} className="flex h-3.5 items-center justify-center">
+            {day && (
               <span
-                className={cn(
-                  'flex size-[15px] items-center justify-center rounded-full font-medium',
-                  d === today && 'bg-[#ff3b30] text-white',
-                  d !== today && i % 7 === 0 && 'text-[#ff3b30]/80',
-                )}
-                aria-current={d === today ? 'date' : undefined}
+                className={`flex size-3.5 items-center justify-center rounded-full ${
+                  day === today
+                    ? 'bg-red-500 font-bold text-white shadow-sm'
+                    : 'text-white/90 drop-shadow-sm'
+                }`}
               >
-                {d}
+                {day}
               </span>
             )}
           </span>

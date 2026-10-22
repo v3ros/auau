@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Search, SquarePen, Trash2, Bookmark } from 'lucide-react'
+import { ChevronLeft, Search, SquarePen, Trash2, Bookmark, X } from 'lucide-react'
 import { HomeIndicator, StatusBar } from '@/components/phone/chrome'
 import { useBackHandler } from '@/lib/story/back-nav'
 import { supabase } from '@/lib/supabase'
@@ -57,6 +57,7 @@ const formatWIB = (dateString: string, detailed = false) => {
 export function NotesApp() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [notes, setNotes] = useState<Note[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
 
   const fetchNotes = async () => {
@@ -123,6 +124,8 @@ export function NotesApp() {
         <NoteList 
           notes={notes} 
           loading={loading}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
           onOpen={setOpenId} 
           onCreate={handleCreate}
         />
@@ -135,30 +138,60 @@ export function NotesApp() {
 function NoteList({ 
   notes, 
   loading, 
+  searchQuery,
+  onSearchChange,
   onOpen, 
   onCreate 
 }: { 
   notes: Note[]
   loading: boolean
+  searchQuery: string
+  onSearchChange: (q: string) => void
   onOpen: (id: string) => void
   onCreate: () => void 
 }) {
+  // Filter catatan hanya berdasarkan judul note saja
+  const filteredNotes = notes.filter((n) => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return true
+    return n.title.toLowerCase().includes(q)
+  })
+
   return (
     <>
       <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         <h1 className="pt-10 text-[32px] font-bold tracking-tight">Notes</h1>
-        <div className="mt-2 flex items-center gap-2 rounded-[10px] bg-black/[0.06] px-2.5 py-2 text-[16px] text-black/40" aria-hidden>
-          <Search className="size-4" />
-          Search Notes
+        
+        {/* Search Bar Fungsional */}
+        <div className="mt-2 flex items-center gap-2 rounded-[10px] bg-black/[0.06] px-2.5 py-1.5 text-[16px]">
+          <Search className="size-4 shrink-0 text-black/40" />
+          <input 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search Notes"
+            className="w-full bg-transparent text-[16px] text-black outline-none placeholder:text-black/40"
+          />
+          {searchQuery && (
+            <button 
+              type="button" 
+              onClick={() => onSearchChange('')}
+              className="flex size-4 items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40"
+            >
+              <X className="size-3" />
+            </button>
+          )}
         </div>
 
         {loading ? (
           <p className="mt-10 text-center text-xs text-gray-400">Memuat catatan...</p>
         ) : notes.length === 0 ? (
           <p className="mt-10 text-center text-xs text-gray-400">Belum ada catatan. Klik ikon pensil di bawah untuk membuat baru!</p>
+        ) : filteredNotes.length === 0 ? (
+          <p className="mt-10 text-center text-xs text-gray-400">Tidak ada catatan dengan judul "{searchQuery}"</p>
         ) : (
           <ul className="mt-5 overflow-hidden rounded-[12px] bg-white">
-            {notes.map((n, i) => {
+            {filteredNotes.map((n, i) => {
               const preview = n.content.split('\n').filter(Boolean)[0] ?? ''
               const bookmarkColor = n.color || '#e5a500'
 
@@ -169,7 +202,6 @@ function NoteList({
                     onClick={() => onOpen(n.id)} 
                     className="flex w-full items-center justify-between py-2.5 pr-4 text-left active:bg-black/5 [&:not(:first-child)]:pl-0"
                   >
-                    {/* Tambahkan min-w-0 agar flexbox tidak mendorong bookmark keluar saat teks panjang */}
                     <span className={i === 0 ? 'block flex-1 min-w-0 px-4' : 'block flex-1 min-w-0'}>
                       <span className="block truncate text-[16px] font-semibold">{n.title || 'Tanpa Judul'}</span>
                       <span className="mt-0.5 flex gap-2 text-[14px] text-black/45">
@@ -194,7 +226,7 @@ function NoteList({
 
       <div className="flex shrink-0 items-center justify-between bg-[#f2f2f7] px-5 py-2">
         <span className="w-6" />
-        <span className="text-[12px] text-black/60">{`${notes.length} Notes`}</span>
+        <span className="text-[12px] text-black/60">{`${filteredNotes.length} Notes`}</span>
         <button type="button" onClick={onCreate} className="transition-all hover:opacity-80 active:scale-95">
           <SquarePen className="size-6 text-[#e5a500]" aria-hidden />
         </button>
@@ -276,7 +308,7 @@ function NoteDetail({
 
         <textarea 
           value={content}
-          onChange={(e) => handleContentChange(e.target.value)} // disesuaikan handler-nya
+          onChange={(e) => handleContentChange(e.target.value)}
           placeholder="Mulai ketik catatan..."
           className="no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden w-full flex-1 resize-none bg-transparent text-[17px] leading-relaxed outline-none"
         />

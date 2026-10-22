@@ -1,6 +1,7 @@
 'use client'
 
 import { Camera, MessageCircle, Phone, Settings } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export type IconKind =
   | 'kakao'
@@ -17,21 +18,48 @@ export type IconKind =
   | 'voicememos'
   | 'youtube'
 
-const base = 'relative flex size-full items-center justify-center overflow-hidden rounded-[23%]'
+// Style dasar Liquid Glass transparan dengan border kaca & backdrop blur
+const base =
+  'relative flex size-full items-center justify-center overflow-hidden rounded-[18px] bg-white/20 border border-white/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]'
 
-const PETALS = ['#f7b500', '#f78a1d', '#ef4a56', '#d14b9f', '#8e5ad8', '#3f88f3', '#2fc2d0', '#5ccb4e']
+// Lapisan kilau reflektif kaca di bagian atas
+function GlassSheen() {
+  return (
+    <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
+  )
+}
+
+const PETALS = [
+  '#f7b500',
+  '#f78a1d',
+  '#ef4a56',
+  '#d14b9f',
+  '#8e5ad8',
+  '#3f88f3',
+  '#2fc2d0',
+  '#5ccb4e',
+]
 
 export function AppGlyph({ kind }: { kind: IconKind }) {
   switch (kind) {
     case 'kakao':
       return (
-        <span className={base} style={{ backgroundColor: '#fee500' }}>
-          <svg viewBox="0 0 100 100" className="size-full" aria-hidden>
+        <span className={base}>
+          <GlassSheen />
+          <svg viewBox="0 0 100 100" className="size-[65%] z-0" aria-hidden>
             <path
               d="M50 22c-19.9 0-36 12.6-36 28.2 0 10 6.7 18.8 16.7 23.8l-3.4 12.6c-.3 1.1.9 2 1.9 1.4l14.9-9.9c1.9.2 3.9.3 5.9.3 19.9 0 36-12.6 36-28.2S69.9 22 50 22Z"
-              fill="#3a1d1d"
+              fill="#ffffff"
             />
-            <text x="50" y="56" textAnchor="middle" fontSize="15" fontWeight="900" fill="#fee500" fontFamily="Arial, sans-serif">
+            <text
+              x="50"
+              y="56"
+              textAnchor="middle"
+              fontSize="15"
+              fontWeight="900"
+              fill="#1c1c1e"
+              fontFamily="Arial, sans-serif"
+            >
               TALK
             </text>
           </svg>
@@ -39,15 +67,16 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'photos':
       return (
-        <span className={`${base} bg-white`}>
-          <span className="relative size-[78%]">
+        <span className={base}>
+          <GlassSheen />
+          <span className="relative size-[72%] z-0">
             {PETALS.map((c, i) => (
               <span
                 key={c}
-                className="absolute left-1/2 top-1/2 h-[46%] w-[24%] rounded-full mix-blend-multiply"
+                className="absolute left-1/2 top-1/2 h-[46%] w-[24%] rounded-full"
                 style={{
                   backgroundColor: c,
-                  opacity: 0.88,
+                  opacity: 0.9,
                   transform: `translate(-50%, -100%) rotate(${i * 45}deg)`,
                   transformOrigin: '50% 100%',
                 }}
@@ -58,46 +87,60 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'settings':
       return (
-        <span className={base} style={{ background: 'linear-gradient(#c9ccd2, #8a8f98)' }}>
-          <span className="flex size-[80%] items-center justify-center rounded-full" style={{ background: 'radial-gradient(#5d6169 0 38%, #2f3237 39% 100%)' }}>
-            <Settings className="size-[96%] text-[#d9dbdf]" strokeWidth={1.3} />
+        <span className={base}>
+          <GlassSheen />
+          <span className="flex size-[70%] items-center justify-center rounded-full bg-white/10 z-0">
+            <Settings className="size-[85%] text-white" strokeWidth={1.5} />
           </span>
         </span>
       )
     case 'phone':
       return (
-        <span className={base} style={{ background: 'linear-gradient(#5ff777, #0abc3a)' }}>
-          <Phone className="size-[50%] fill-white text-white" strokeWidth={0} />
+        <span className={base}>
+          <GlassSheen />
+          <Phone className="size-[48%] fill-white text-white z-0" strokeWidth={0} />
         </span>
       )
     case 'messages':
       return (
-        <span className={base} style={{ background: 'linear-gradient(#5ff777, #0abc3a)' }}>
-          <MessageCircle className="size-[62%] fill-white text-white" strokeWidth={0} />
+        <span className={base}>
+          <GlassSheen />
+          <MessageCircle className="size-[55%] fill-white text-white z-0" strokeWidth={0} />
         </span>
       )
     case 'camera':
       return (
-        <span className={base} style={{ background: 'linear-gradient(#e9eaed, #a7abb2)' }}>
-          <span className="relative flex h-[44%] w-[64%] items-center justify-center rounded-[18%] bg-[#2b2c2f]">
-            <span className="size-[52%] rounded-full border-[3px] border-[#55575c] bg-[#1b1c1f]" style={{ width: '42%', height: '64%' }} />
-            <span className="absolute right-[10%] top-[16%] size-[10%] rounded-full bg-[#f5c242]" />
+        <span className={base}>
+          <GlassSheen />
+          <span className="relative flex h-[42%] w-[62%] items-center justify-center rounded-[16%] bg-white/30 border border-white/30 z-0">
+            <span
+              className="size-[52%] rounded-full border-[2px] border-white/80 bg-black/30"
+              style={{ width: '42%', height: '64%' }}
+            />
+            <span className="absolute right-[12%] top-[16%] size-[10%] rounded-full bg-white" />
           </span>
           <Camera className="sr-only" aria-hidden />
         </span>
       )
     case 'safari':
       return (
-        <span className={`${base} bg-white`}>
+        <span className={base}>
+          <GlassSheen />
           <span
-            className="relative size-[84%] rounded-full"
-            style={{ background: 'radial-gradient(circle at 50% 35%, #1ad6fd, #1d62f0 75%)' }}
+            className="relative size-[78%] rounded-full border border-white/40 z-0 shadow-sm"
+            style={{
+              background:
+                'radial-gradient(circle at 50% 35%, rgba(26,214,253,0.85), rgba(29,98,240,0.85) 75%)',
+            }}
           >
             {Array.from({ length: 24 }).map((_, i) => (
               <span
                 key={i}
-                className="absolute left-1/2 top-[3%] h-[8%] w-[2%] -translate-x-1/2 rounded-full bg-white/80"
-                style={{ transform: `translateX(-50%) rotate(${i * 15}deg)`, transformOrigin: '50% 590%' }}
+                className="absolute left-1/2 top-[3%] h-[8%] w-[2%] -translate-x-1/2 rounded-full bg-white/90"
+                style={{
+                  transform: `translateX(-50%) rotate(${i * 15}deg)`,
+                  transformOrigin: '50% 590%',
+                }}
               />
             ))}
             <span className="absolute inset-0 rotate-45">
@@ -109,17 +152,12 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'anyai':
       return (
-        <span className={base} style={{ background: 'linear-gradient(145deg, #2b2d33, #0d0e10)' }}>
-          <svg viewBox="0 0 48 48" className="size-[62%]" aria-hidden>
-            <defs>
-              <linearGradient id="anyai-g" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#ffffff" />
-                <stop offset="1" stopColor="#b9c3ff" />
-              </linearGradient>
-            </defs>
+        <span className={base}>
+          <GlassSheen />
+          <svg viewBox="0 0 48 48" className="size-[58%] z-0" aria-hidden>
             <path
               d="M24 4c1.6 9.6 5.4 14.4 16 16-10.6 1.6-14.4 6.4-16 16-1.6-9.6-5.4-14.4-16-16 10.6-1.6 14.4-6.4 16-16Z"
-              fill="url(#anyai-g)"
+              fill="#ffffff"
             />
             <circle cx="38" cy="38" r="4" fill="#b9c3ff" />
           </svg>
@@ -127,29 +165,32 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'notes':
       return (
-        <span className={`${base} flex-col bg-[#fee500]`}>
-          <span className="flex h-full w-full flex-col">
-            <span className="h-[14%] w-full bg-[#f8d000]" />
-            <span className="flex-1 px-[15%] py-[10%]">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="mb-[16%] block h-[2.5%] w-full rounded-full bg-black/15"
-                />
-              ))}
-            </span>
+        <span className={base}>
+          <GlassSheen />
+          <span className="flex h-[72%] w-[68%] flex-col rounded-[14%] bg-white/20 p-2 z-0 border border-white/20">
+            <span className="h-[12%] w-full bg-white/50 rounded-sm mb-2" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <span
+                key={i}
+                className="mb-[14%] block h-[3%] w-full rounded-full bg-white/60"
+              />
+            ))}
           </span>
         </span>
       )
     case 'voicememos':
       return (
-        <span className={`${base} bg-black`}>
-          <span className="flex h-[46%] w-[74%] items-center justify-between">
+        <span className={base}>
+          <GlassSheen />
+          <span className="flex h-[44%] w-[70%] items-center justify-between z-0">
             {[22, 48, 72, 100, 64, 86, 40, 70, 30, 54, 18].map((h, i) => (
               <span
                 key={i}
-                className="w-[5%] rounded-full"
-                style={{ height: `${h}%`, backgroundColor: i < 5 ? '#ff3b30' : '#ffffff' }}
+                className="w-[6%] rounded-full"
+                style={{
+                  height: `${h}%`,
+                  backgroundColor: i < 5 ? '#ff3b30' : '#ffffff',
+                }}
               />
             ))}
           </span>
@@ -157,8 +198,9 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'youtube':
       return (
-        <span className={`${base} bg-white`}>
-          <svg viewBox="0 0 28 20" className="w-[66%]" aria-hidden>
+        <span className={base}>
+          <GlassSheen />
+          <svg viewBox="0 0 28 20" className="w-[62%] z-0 drop-shadow" aria-hidden>
             <path
               d="M27.4 3.1A3.5 3.5 0 0 0 24.9.6C22.7 0 14 0 14 0S5.3 0 3.1.6A3.5 3.5 0 0 0 .6 3.1C0 5.3 0 10 0 10s0 4.7.6 6.9a3.5 3.5 0 0 0 2.5 2.5C5.3 20 14 20 14 20s8.7 0 10.9-.6a3.5 3.5 0 0 0 2.5-2.5c.6-2.2.6-6.9.6-6.9s0-4.7-.6-6.9Z"
               fill="#ff0000"
@@ -169,25 +211,42 @@ export function AppGlyph({ kind }: { kind: IconKind }) {
       )
     case 'calendar':
       return (
-        <span className={`${base} flex-col bg-white`}>
-          <span className="mt-[8%] text-[10px] font-semibold uppercase leading-none text-[#ff3b30]">Wed</span>
-          <span className="text-[30px] font-light leading-none tracking-tight text-black">19</span>
+        <span className={base}>
+          <GlassSheen />
+          <span className="flex flex-col items-center justify-center size-[72%] rounded-[18%] bg-white/20 border border-white/20 z-0">
+            <span className="text-[11px] font-bold uppercase leading-none text-[#ff3b30]">
+              Wed
+            </span>
+            <span className="text-[28px] font-light leading-none tracking-tight text-white mt-1">
+              19
+            </span>
+          </span>
         </span>
       )
     case 'clock':
       return (
-        <span className={`${base} bg-black`}>
-          <span className="relative size-[86%] rounded-full bg-white">
+        <span className={base}>
+          <GlassSheen />
+          <span className="relative size-[76%] rounded-full bg-white/20 border border-white/30 z-0 flex items-center justify-center">
             {Array.from({ length: 12 }).map((_, i) => (
               <span
                 key={i}
-                className="absolute left-1/2 top-[4%] h-[7%] w-[3%] rounded-full bg-black"
-                style={{ transform: `translateX(-50%) rotate(${i * 30}deg)`, transformOrigin: '50% 657%' }}
+                className="absolute left-1/2 top-[4%] h-[12%] w-[6%] -translate-x-1/2 rounded-full bg-white"
+                style={{
+                  transform: `translateX(-50%) rotate(${i * 30}deg)`,
+                  transformOrigin: '50% 320%',
+                }}
               />
             ))}
-            <span className="absolute bottom-1/2 left-1/2 h-[26%] w-[5%] origin-bottom -translate-x-1/2 rounded-full bg-black" style={{ transform: 'translateX(-50%) rotate(-5deg)' }} />
-            <span className="absolute bottom-1/2 left-1/2 h-[38%] w-[4%] origin-bottom -translate-x-1/2 rounded-full bg-black" style={{ transform: 'translateX(-50%) rotate(342deg)' }} />
-            <span className="absolute left-1/2 top-1/2 size-[8%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff9500]" />
+            <span
+              className="absolute bottom-1/2 left-1/2 h-[28%] w-[6%] origin-bottom -translate-x-1/2 rounded-full bg-white"
+              style={{ transform: 'translateX(-50%) rotate(-5deg)' }}
+            />
+            <span
+              className="absolute bottom-1/2 left-1/2 h-[38%] w-[4%] origin-bottom -translate-x-1/2 rounded-full bg-white"
+              style={{ transform: 'translateX(-50%) rotate(342deg)' }}
+            />
+            <span className="absolute left-1/2 top-1/2 size-[10%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ff9500]" />
           </span>
         </span>
       )

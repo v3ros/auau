@@ -37,16 +37,17 @@ const PAGE_TWO: HomeApp[] = []
 const DOCK: HomeApp[] = [
   { kind: 'messages', app: 'messages', label: 'Messages' },
   { kind: 'camera', app: 'camera', label: 'Camera' },
-  { kind: 'safari', app: 'safari', label: 'Safari' },
   { kind: 'phone', app: 'phone', label: 'Phone' },
+  { kind: 'safari', app: 'safari', label: 'Safari' },
 ]
 
 function XIcon() {
   return (
-    <span className="flex size-full items-center justify-center overflow-hidden rounded-[22%] bg-black">
+    <span className="relative flex size-full items-center justify-center overflow-hidden rounded-[18px] bg-white/20 border border-white/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
+      <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
       <svg
         viewBox="0 0 24 24"
-        className="size-[72%] text-white"
+        className="size-[58%] text-white z-0 drop-shadow"
         fill="currentColor"
         role="img"
         aria-label="X"
@@ -59,12 +60,21 @@ function XIcon() {
 
 function CalculatorIcon() {
   return (
-    <span className="flex size-full items-center justify-center overflow-hidden rounded-[22%] bg-zinc-900 shadow-md">
-      <div className="grid grid-cols-2 gap-1 p-2.5 size-full bg-gradient-to-br from-zinc-800 to-black">
-        <span className="flex items-center justify-center rounded-md bg-orange-500 text-white font-bold text-[13px]">+</span>
-        <span className="flex items-center justify-center rounded-md bg-zinc-700 text-white font-bold text-[13px]">-</span>
-        <span className="flex items-center justify-center rounded-md bg-zinc-700 text-white font-bold text-[13px]">×</span>
-        <span className="flex items-center justify-center rounded-md bg-orange-500 text-white font-bold text-[13px]">=</span>
+    <span className="relative flex size-full items-center justify-center overflow-hidden rounded-[18px] bg-white/20 border border-white/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
+      <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
+      <div className="grid grid-cols-2 gap-1 p-2 size-[72%] rounded-[18%] bg-white/10 border border-white/20 z-0">
+        <span className="flex items-center justify-center rounded-md bg-orange-500/80 text-white font-bold text-[11px]">
+          +
+        </span>
+        <span className="flex items-center justify-center rounded-md bg-white/20 text-white font-bold text-[11px]">
+          -
+        </span>
+        <span className="flex items-center justify-center rounded-md bg-white/20 text-white font-bold text-[11px]">
+          ×
+        </span>
+        <span className="flex items-center justify-center rounded-md bg-orange-500/80 text-white font-bold text-[11px]">
+          =
+        </span>
       </div>
     </span>
   )
@@ -77,14 +87,8 @@ export function HomeScreen() {
   const pagerRef = useRef<HTMLDivElement>(null)
 
   const launch = (app: AppId) => {
-    if (
-      app === 'photos' ||
-      app === 'calendar' ||
-      app === 'kakao' ||
-      app === 'camera' ||
-      app === 'notes' ||
-      app === ('calculator' as AppId)
-    ) {
+    const validApps = ['photos', 'calendar', 'kakao', 'camera', 'notes', 'weather', 'calculator']
+    if (validApps.includes(app as string)) {
       openApp(app)
     }
   }
@@ -119,7 +123,10 @@ export function HomeScreen() {
       }}
       onDoubleClick={handleDoubleTapLock}
     >
-      <div className="relative flex h-full min-h-0 flex-col">
+      {/* Overlay Gelap Halus */}
+      <div className="absolute inset-0 bg-black/5 backdrop-brightness-95 pointer-events-none" />
+
+      <div className="relative z-10 flex h-full min-h-0 flex-col">
         <StatusBar tone="light" />
 
         <div
@@ -138,7 +145,7 @@ export function HomeScreen() {
             className="flex w-full shrink-0 snap-start flex-col overflow-y-auto px-6 pt-1"
           >
             <div className="grid grid-cols-2 gap-5">
-              <WeatherWidget />
+              <WeatherWidget onOpen={() => openApp('weather' as AppId)} />
               <CalendarWidget onOpen={() => openApp('calendar')} />
             </div>
 
