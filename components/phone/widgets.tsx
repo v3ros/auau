@@ -3,15 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Sun } from 'lucide-react'
 
-// Style dasar Liquid Glass untuk Widget
 const widgetGlassBase =
-  'relative flex aspect-square w-full flex-col justify-between overflow-hidden rounded-[26px] bg-white/20 border border-white/40 p-3.5 text-white backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]'
-
-function GlassSheen() {
-  return (
-    <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none z-10" />
-  )
-}
+  'relative flex aspect-square w-full flex-col justify-between overflow-hidden rounded-[26px] bg-white/20 border border-white/30 p-3.5 text-white backdrop-blur-xl shadow-lg'
 
 export function WeatherWidget({ onOpen }: { onOpen?: () => void }) {
   const [temp, setTemp] = useState<number | null>(null)
@@ -42,8 +35,6 @@ export function WeatherWidget({ onOpen }: { onOpen?: () => void }) {
       onClick={onOpen}
       className={`${widgetGlassBase} text-left transition-all active:scale-95 cursor-pointer`}
     >
-      <GlassSheen />
-
       <div className="z-0">
         <div className="flex items-center justify-between">
           <span className="text-[13px] font-semibold drop-shadow">Jakarta</span>
@@ -84,8 +75,6 @@ export function CalendarWidget({ onOpen }: { onOpen?: () => void }) {
       onClick={onOpen}
       className={`${widgetGlassBase} text-left transition-all active:scale-95 cursor-pointer`}
     >
-      <GlassSheen />
-
       <div className="z-0 flex items-center justify-between border-b border-white/20 pb-1">
         <span className="text-[11px] font-bold text-red-400 drop-shadow">{month}</span>
       </div>

@@ -1,12 +1,18 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { withBasePath } from '@/lib/base-path'
 import { cn } from '@/lib/utils'
 import { useStory, type AppId } from '@/lib/story/store'
 import { AppGlyph, type IconKind } from './app-icons'
 import { HomeIndicator, StatusBar } from './chrome'
 import { CalendarWidget, WeatherWidget } from './widgets'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 type HomeApp = {
   kind: IconKind | 'calculator'
@@ -16,10 +22,10 @@ type HomeApp = {
 }
 
 const PAGE_ONE: HomeApp[] = [
+  { kind: 'settings', app: 'settings', label: 'Settings' },
   { kind: 'kakao', app: 'kakao', label: '' },
   { kind: 'anyai', app: 'anyai', label: '' },
   { kind: 'photos', app: 'photos', label: '' },
-  { kind: 'settings', app: 'settings', label: '' },
   { kind: 'notes', app: 'notes', label: '' },
   { kind: 'calendar', app: 'calendar', label: '' },
   { kind: 'clock', app: 'clock', label: '' },
@@ -84,10 +90,43 @@ export function HomeScreen() {
   const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
   const [isLocking, setIsLocking] = useState(false)
+  const [wallpaperUrl, setWallpaperUrl] = useState<string>(withBasePath('/images/wallpaper.jpg'))
   const pagerRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    const fetchWallpaper = async () => {
+      const { data } = await supabase
+        .from('app_config')
+        .select('value')
+        .eq('key', 'wallpaper_url')
+        .single()
+      if (data?.value) {
+        setWallpaperUrl(data.value)
+      }
+    }
+
+    fetchWallpaper()
+
+    const channel = supabase
+      .channel('public:app_config')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'key=eq.wallpaper_url' },
+        (payload) => {
+          if (payload.new?.value) {
+            setWallpaperUrl(payload.new.value)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
+
   const launch = (app: AppId) => {
-    const validApps = ['photos', 'calendar', 'kakao', 'camera', 'notes', 'weather', 'calculator']
+    const validApps = ['photos', 'calendar', 'kakao', 'camera', 'notes', 'weather', 'calculator', 'settings']
     if (validApps.includes(app as string)) {
       openApp(app)
     }
@@ -95,7 +134,6 @@ export function HomeScreen() {
 
   const goToPage = (i: number) => {
     const el = pagerRef.current
-
     el?.scrollTo({
       left: i * el.clientWidth,
       behavior: 'smooth',
@@ -119,12 +157,11 @@ export function HomeScreen() {
         isLocking ? "opacity-0 blur-md scale-95" : "opacity-100 blur-0 scale-100"
       )}
       style={{
-        backgroundImage: `url(${withBasePath('/images/wallpaper.jpg')})`,
+        backgroundImage: `url(${wallpaperUrl})`,
       }}
       onDoubleClick={handleDoubleTapLock}
     >
-      {/* Overlay Gelap Halus */}
-      <div className="absolute inset-0 bg-black/5 backdrop-brightness-95 pointer-events-none" />
+      <div className="absolute inset-0 bg-black/1 backdrop-brightness-90 pointer-events-none" />
 
       <div className="relative z-10 flex h-full min-h-0 flex-col">
         <StatusBar tone="light" />
@@ -133,7 +170,6 @@ export function HomeScreen() {
           ref={pagerRef}
           onScroll={(e) => {
             const el = e.currentTarget
-
             if (el.clientWidth > 0) {
               setPage(Math.round(el.scrollLeft / el.clientWidth))
             }
@@ -142,7 +178,7 @@ export function HomeScreen() {
         >
           <section
             aria-label="Home Screen Page 1"
-            className="flex w-full shrink-0 snap-start flex-col overflow-y-auto px-6 pt-1"
+            className="flex w-full shrink-0 snap-start flex-col px-6 pt-1"
           >
             <div className="grid grid-cols-2 gap-5">
               <WeatherWidget onOpen={() => openApp('weather' as AppId)} />
@@ -158,7 +194,7 @@ export function HomeScreen() {
 
           <section
             aria-label="Home Screen Page 2"
-            className="flex w-full shrink-0 snap-start flex-col overflow-y-auto px-6 pt-1"
+            className="flex w-full shrink-0 snap-start flex-col px-6 pt-1"
           >
             <AppGrid apps={PAGE_TWO} onLaunch={launch} />
           </section>
