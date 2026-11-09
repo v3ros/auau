@@ -78,6 +78,7 @@ export function VoiceMemosApp() {
           onOpen={setFolder} 
           allCount={memos.length} 
           trashCount={trashedMemos.length} 
+          onOpenRecord={() => setFolder('record')}
         />
       ) : folder === 'all' ? (
         <FolderView 
@@ -98,10 +99,10 @@ export function VoiceMemosApp() {
       ) : (
         <RecordView 
           totalCount={memos.length}
-          onBack={() => setFolder('all')} 
+          onBack={() => setFolder('root')} 
           onSaved={() => {
             fetchMemos()
-            setFolder('all')
+            setFolder('root')
           }} 
         />
       )}
@@ -110,15 +111,27 @@ export function VoiceMemosApp() {
   )
 }
 
-function FolderList({ onOpen, allCount, trashCount }: { onOpen: (f: Folder) => void; allCount: number; trashCount: number }) {
+function FolderList({ 
+  onOpen, 
+  allCount, 
+  trashCount, 
+  onOpenRecord 
+}: { 
+  onOpen: (f: Folder) => void
+  allCount: number
+  trashCount: number
+  onOpenRecord: () => void 
+}) {
   const rows: { id: Folder; label: string; count: number; icon: React.ReactNode }[] = [
     { id: 'all', label: 'All Recordings', count: allCount, icon: <Waves className="size-[22px] text-[#0a84ff]" /> },
     { id: 'trash', label: 'Recently Deleted', count: trashCount, icon: <Trash2 className="size-[22px] text-[#0a84ff]" /> },
   ]
   return (
     <div className="min-h-0 flex-1 overflow-y-auto px-4">
-      <div className="flex justify-end py-2 text-[17px] text-[#0a84ff]" aria-hidden>
-        Edit
+      <div className="flex justify-end py-2">
+        <button type="button" onClick={onOpenRecord} className="text-[17px] text-[#0a84ff] font-semibold">
+          Record
+        </button>
       </div>
       <h1 className="pb-4 text-[34px] font-bold tracking-tight">Voice</h1>
       <ul className="overflow-hidden rounded-[12px] bg-[#1c1c1e]">
@@ -375,8 +388,6 @@ function RecordView({ totalCount, onBack, onSaved }: { totalCount: number; onBac
         .getPublicUrl(fileName)
 
       const audioUrl = publicUrlData.publicUrl
-
-      // Format nama otomatis menjadi "Voice [Nomor Urut]"
       const title = `Voice ${totalCount + 1}`
 
       const { error: dbErr } = await supabase
