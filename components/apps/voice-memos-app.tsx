@@ -33,7 +33,6 @@ export function VoiceMemosApp() {
   const [trashedMemos, setTrashedMemos] = useState<Memo[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch dari Supabase database
   const fetchMemos = async () => {
     setLoading(true)
     const { data, error } = await supabase
@@ -44,8 +43,8 @@ export function VoiceMemosApp() {
     if (!error && data) {
       const formatted: Memo[] = data.map((item: any) => ({
         id: item.id,
-        title: item.title || 'New Recording',
-        date: new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(item.created_at)),
+        title: item.title || 'Voice 1',
+        date: new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(item.created_at)),
         duration: item.duration || 0,
         src: item.audio_url,
       }))
@@ -98,6 +97,7 @@ export function VoiceMemosApp() {
         />
       ) : (
         <RecordView 
+          totalCount={memos.length}
           onBack={() => setFolder('all')} 
           onSaved={() => {
             fetchMemos()
@@ -120,7 +120,7 @@ function FolderList({ onOpen, allCount, trashCount }: { onOpen: (f: Folder) => v
       <div className="flex justify-end py-2 text-[17px] text-[#0a84ff]" aria-hidden>
         Edit
       </div>
-      <h1 className="pb-4 text-[34px] font-bold tracking-tight">Voice Memos</h1>
+      <h1 className="pb-4 text-[34px] font-bold tracking-tight">Voice</h1>
       <ul className="overflow-hidden rounded-[12px] bg-[#1c1c1e]">
         {rows.map((r, i) => (
           <li key={r.id}>
@@ -182,7 +182,7 @@ function FolderView({
       <div className="flex items-center justify-between px-2 py-2 text-[17px] text-[#0a84ff]">
         <button type="button" onClick={onBack} className="flex items-center">
           <ChevronLeft className="size-7" aria-hidden />
-          Voice Memos
+          Voice
         </button>
         {folder === 'all' && onOpenRecord && (
           <button type="button" onClick={onOpenRecord} className="px-2 font-semibold">
@@ -312,7 +312,7 @@ function MemoRow({
   )
 }
 
-function RecordView({ onBack, onSaved }: { onBack: () => void; onSaved: () => void }) {
+function RecordView({ totalCount, onBack, onSaved }: { totalCount: number; onBack: () => void; onSaved: () => void }) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [uploading, setUploading] = useState(false)
@@ -376,16 +376,8 @@ function RecordView({ onBack, onSaved }: { onBack: () => void; onSaved: () => vo
 
       const audioUrl = publicUrlData.publicUrl
 
-      // Format nama otomatis berdasarkan tanggal dan jam real-time saat disimpan
-      const now = new Date()
-      const title = new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }).format(now)
+      // Format nama otomatis menjadi "Voice [Nomor Urut]"
+      const title = `Voice ${totalCount + 1}`
 
       const { error: dbErr } = await supabase
         .from('voice_memos')
@@ -400,7 +392,7 @@ function RecordView({ onBack, onSaved }: { onBack: () => void; onSaved: () => vo
       setUploading(false)
     }
   }
-  
+
   return (
     <div className="flex flex-1 flex-col justify-between p-6 text-center">
       <div className="flex justify-start">
