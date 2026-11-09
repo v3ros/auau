@@ -5,6 +5,7 @@ import { useBackHandler } from '@/lib/story/back-nav'
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   Ellipsis,
   Heart,
   Info,
@@ -77,7 +78,7 @@ const compressImage = (file: File): Promise<string> => {
         const ctx = canvas.getContext('2d')
         ctx?.drawImage(img, 0, 0, width, height)
 
-        // Ekspor ke format JPEG dengan kualitas 75% (ukuran file turun drastis, kualitas tetap tajam)
+        // Ekspor ke format JPEG dengan kualitas 75%
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.75)
         resolve(compressedBase64)
       }
@@ -135,11 +136,9 @@ export function PhotosApp() {
     const file = files[0]
 
     try {
-      // 1. Kompres gambar sebelum di-upload
       const compressedBase64 = await compressImage(file)
       const altText = file.name || 'Uploaded Photo'
 
-      // 2. Kirim hasil kompresi ke Supabase
       const { data, error } = await supabase
         .from('user_photos')
         .insert([{ src: compressedBase64, alt: altText }])
@@ -303,6 +302,16 @@ function Viewer({
   const hasPrev = index > 0
   const hasNext = index < photos.length - 1
 
+  // Fungsi untuk mendownload foto yang sedang dibuka
+  const handleDownload = () => {
+    const link = document.createElement('a')
+    link.href = photo.src
+    link.download = `photo-${photo.id || Date.now()}.jpg`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -457,6 +466,15 @@ function Viewer({
           aria-hidden
         >
           <Share className="size-6 cursor-pointer" strokeWidth={1.7} />
+          {/* Tombol Download ditambahkan di sini */}
+          <button 
+            type="button" 
+            onClick={handleDownload}
+            className="hover:opacity-85 transition-opacity"
+            title="Download Foto"
+          >
+            <Download className="size-6" strokeWidth={1.7} />
+          </button>
           <Heart className="size-6 cursor-pointer" strokeWidth={1.7} />
           <Info className="size-6 cursor-pointer" strokeWidth={1.7} />
           <button 
