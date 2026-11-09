@@ -375,7 +375,17 @@ function RecordView({ onBack, onSaved }: { onBack: () => void; onSaved: () => vo
         .getPublicUrl(fileName)
 
       const audioUrl = publicUrlData.publicUrl
-      const title = `Voice Memo ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+
+      // Format nama otomatis berdasarkan tanggal dan jam real-time saat disimpan
+      const now = new Date()
+      const title = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }).format(now)
 
       const { error: dbErr } = await supabase
         .from('voice_memos')
@@ -390,7 +400,7 @@ function RecordView({ onBack, onSaved }: { onBack: () => void; onSaved: () => vo
       setUploading(false)
     }
   }
-
+  
   return (
     <div className="flex flex-1 flex-col justify-between p-6 text-center">
       <div className="flex justify-start">
