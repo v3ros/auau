@@ -30,14 +30,13 @@ const PAGE_ONE: HomeApp[] = [
   { kind: 'calendar', app: 'calendar', label: '' },
   { kind: 'clock', app: 'clock', label: '' },
   { kind: 'calculator', app: 'calculator' as AppId, label: '' },
-  { kind: 'voicememos', app: 'voicememos', label: ' ' },
+  { kind: 'voicememos', app: 'voicememos', label: '' },
   {
     kind: 'youtube',
     href: 'https://www.youtube.com/',
     label: '',
   },
 ]
-
 const PAGE_TWO: HomeApp[] = []
 
 const DOCK: HomeApp[] = [
@@ -126,7 +125,7 @@ export function HomeScreen() {
   }, [])
 
   const launch = (app: AppId) => {
-    const validApps = ['photos', 'calendar', 'kakao', 'camera', 'notes', 'weather', 'calculator', 'settings']
+    const validApps = ['photos', 'calendar', 'kakao', 'camera', 'notes', 'weather', 'calculator', 'settings', 'voicememos']
     if (validApps.includes(app as string)) {
       openApp(app)
     }
