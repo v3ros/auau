@@ -89,7 +89,15 @@ export function HomeScreen() {
   const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
   const [isLocking, setIsLocking] = useState(false)
-  const [wallpaperUrl, setWallpaperUrl] = useState<string>(withBasePath('/images/wallpaper.jpg'))
+  
+  // Menggunakan cache localStorage untuk nilai awal wallpaper
+  const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cached_wallpaper') || withBasePath('/images/wallpaper.jpg')
+    }
+    return withBasePath('/images/wallpaper.jpg')
+  })
+  
   const pagerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -101,19 +109,21 @@ export function HomeScreen() {
         .single()
       if (data?.value) {
         setWallpaperUrl(data.value)
+        localStorage.setItem('cached_wallpaper', data.value)
       }
     }
 
     fetchWallpaper()
 
     const channel = supabase
-      .channel('public:app_config')
+      .channel('public:app_config_home')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'app_config', filter: 'key=eq.wallpaper_url' },
         (payload) => {
           if (payload.new?.value) {
             setWallpaperUrl(payload.new.value)
+            localStorage.setItem('cached_wallpaper', payload.new.value)
           }
         }
       )

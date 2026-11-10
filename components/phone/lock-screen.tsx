@@ -20,7 +20,14 @@ export function LockScreen() {
   const [formattedDate, setFormattedDate] = useState('')
   const [realTimeClock, setRealTimeClock] = useState('')
   const [isLeaving, setIsLeaving] = useState(false)
-  const [wallpaperUrl, setWallpaperUrl] = useState<string>(withBasePath('/images/wallpaper.jpg'))
+  
+  // Menggunakan cache localStorage untuk menghindari kedip
+  const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cached_wallpaper') || withBasePath('/images/wallpaper.jpg')
+    }
+    return withBasePath('/images/wallpaper.jpg')
+  })
 
   useEffect(() => {
     const fetchWallpaper = async () => {
@@ -31,6 +38,7 @@ export function LockScreen() {
         .single()
       if (data?.value) {
         setWallpaperUrl(data.value)
+        localStorage.setItem('cached_wallpaper', data.value)
       }
     }
 
@@ -44,6 +52,7 @@ export function LockScreen() {
         (payload) => {
           if (payload.new?.value) {
             setWallpaperUrl(payload.new.value)
+            localStorage.setItem('cached_wallpaper', payload.new.value)
           }
         }
       )
