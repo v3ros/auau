@@ -223,3 +223,26 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+@keyframes appOpenScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.15);
+    border-radius: 48px;
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    border-radius: 0px;
+  }
+}
+
+.animate-app-open {
+  animation: appOpenScale 320ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: transform, opacity, filter, border-radius;
+  transform-origin: center center;
+}

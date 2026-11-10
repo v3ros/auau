@@ -29,8 +29,8 @@ export function Passcode() {
   const { unlock, lock } = useStory()
   const [code, setCode] = useState('')
   const [shake, setShake] = useState(false)
+  const [isUnlocking, setIsUnlocking] = useState(false) // State blur pelan-pelan menuju Home
   
-  // Menggunakan cache localStorage untuk menghindari kedip
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('cached_wallpaper') || withBasePath('/images/wallpaper.jpg')
@@ -74,13 +74,17 @@ export function Passcode() {
 
   const press = useCallback(
     (d: string) => {
-      if (shake) return
+      if (shake || isUnlocking) return
       setCode((prev) => {
         if (prev.length >= 4) return prev
         const next = prev + d
         if (next.length === 4) {
           if (next === PASSCODE) {
-            window.setTimeout(unlock, 150)
+            setIsUnlocking(true) // Picu efek blur pelan-pelan
+            window.setTimeout(() => {
+              unlock()
+              setIsUnlocking(false)
+            }, 250) // Durasi blur sinkron dengan LockScreen (250ms)
           } else {
             window.setTimeout(() => setShake(true), 120)
             window.setTimeout(() => {
@@ -92,7 +96,7 @@ export function Passcode() {
         return next
       })
     },
-    [shake, unlock],
+    [shake, isUnlocking, unlock],
   )
 
   const erase = useCallback(() => setCode((p) => p.slice(0, -1)), [])
@@ -109,15 +113,20 @@ export function Passcode() {
 
   return (
     <div
-      className="absolute inset-0 flex flex-col bg-cover bg-center text-white"
-      style={{ backgroundImage: `url(${wallpaperUrl})` }}
+      className={cn(
+        "absolute inset-0 flex flex-col text-white transition-[filter] duration-300 ease-out",
+        isUnlocking ? "blur-xl scale-105" : "blur-0 scale-100" // Murni blur & subtle scale TANPA opacity-0
+      )}
+      style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <div className="absolute inset-0 bg-black/45 backdrop-blur-xl" aria-hidden />
-      <div className="relative flex h-full flex-col">
+      {/* Efek blur latar belakang ala iOS Passcode */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl transition-all duration-300" aria-hidden />
+      
+      <div className="relative flex h-full flex-col z-10">
         <StatusBar tone="light" />
         <div className="flex flex-1 flex-col items-center justify-center gap-[clamp(12px,4dvh,40px)]">
           <div className="flex flex-col items-center gap-4">
-            <p className="text-lg">Enter Passcode</p>
+            <p className="text-lg">Enter Pin</p>
             <div
               className={cn('flex gap-5', shake && 'animate-shake')}
               role="status"
@@ -126,7 +135,7 @@ export function Passcode() {
               {[0, 1, 2, 3].map((i) => (
                 <span
                   key={i}
-                  className={cn('size-3 rounded-full border border-white', i < code.length && 'bg-white')}
+                  className={cn('size-3 rounded-full border border-white transition-all duration-200', i < code.length && 'bg-white scale-110')}
                 />
               ))}
             </div>
@@ -141,10 +150,10 @@ export function Passcode() {
           </div>
         </div>
         <div className="flex justify-between px-10 pb-2 text-base">
-          <button type="button" onClick={lock} className="px-2 py-1">
+          <button type="button" onClick={lock} className="px-2 py-1 active:opacity-50 transition-opacity">
             Cancel
           </button>
-          <button type="button" onClick={erase} disabled={code.length === 0} className="px-2 py-1 disabled:opacity-40">
+          <button type="button" onClick={erase} disabled={code.length === 0} className="px-2 py-1 disabled:opacity-40 active:opacity-50 transition-opacity">
             Delete
           </button>
         </div>
@@ -159,7 +168,7 @@ function KeyButton({ digit, letters, onPress }: { digit: string; letters: string
     <button
       type="button"
       onClick={() => onPress(digit)}
-      className="flex size-[clamp(56px,9dvh,76px)] flex-col items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition-colors active:bg-white/50"
+      className="flex size-[clamp(56px,9dvh,76px)] flex-col items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition-all active:bg-white/50 active:scale-95"
     >
       <span className="text-[clamp(24px,4dvh,34px)] leading-none">{digit}</span>
       {letters && <span className="text-[9px] font-semibold tracking-[0.2em]">{letters}</span>}

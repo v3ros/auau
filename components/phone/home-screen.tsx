@@ -88,7 +88,6 @@ function CalculatorIcon() {
 export function HomeScreen() {
   const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
-  const [isLocking, setIsLocking] = useState(false)
   
   // Menggunakan cache localStorage untuk nilai awal wallpaper
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
@@ -150,21 +149,14 @@ export function HomeScreen() {
   }
 
   const handleDoubleTapLock = () => {
-    if (isLocking) return
-    setIsLocking(true)
-    setTimeout(() => {
-      if (typeof lock === 'function') {
-        lock()
-      }
-    }, 200)
+    if (typeof lock === 'function') {
+      lock()
+    }
   }
 
   return (
     <div
-      className={cn(
-        "absolute inset-0 flex flex-col bg-cover bg-center text-white select-none transition-opacity duration-200 ease-out",
-        isLocking ? "opacity-0" : "opacity-100"
-      )}
+      className="absolute inset-0 flex flex-col bg-cover bg-center text-white select-none"
       style={{
         backgroundImage: `url(${wallpaperUrl})`,
       }}
@@ -248,7 +240,7 @@ export function HomeScreen() {
                 if (d.app) launch(d.app)
               }}
               aria-label={d.label}
-              className="mx-auto block aspect-square w-full max-w-[64px] active:opacity-70"
+              className="mx-auto block aspect-square w-full max-w-[64px] transition-transform duration-150 active:scale-85"
             >
               <AppGlyph kind={d.kind as IconKind} />
             </button>
@@ -297,8 +289,9 @@ function AppGrid({
           </>
         )
 
+        // Efek animasi tekan ala iOS (scale-85 saat ditekan)
         const cls =
-          'flex flex-col items-center gap-[5px] active:opacity-70'
+          'flex flex-col items-center gap-[5px] transition-transform duration-150 active:scale-85'
 
         return (
           <button

@@ -13,7 +13,8 @@ import { CameraApp } from '@/components/apps/camera-app'
 import { VoiceMemosApp } from '@/components/apps/voice-memos-app'
 import { CalendarApp } from '@/components/apps/calendar-app'
 import { ClockApp } from '@/components/apps/clock-app'
-import { CalculatorApp } from '@/components/apps/calculator-app' // <-- Tambahkan ini
+import { CalculatorApp } from '@/components/apps/calculator-app'
+import { WeatherApp } from '@/components/apps/weather-app'
 import { LockScreen } from './lock-screen'
 import { Passcode } from './passcode'
 import { HomeScreen } from './home-screen'
@@ -22,7 +23,6 @@ import { IncomingCall } from './incoming-call'
 import { OutgoingCall } from './outgoing-call'
 import { TopNav } from './top-nav'
 import { BackNavProvider } from '@/lib/story/back-nav'
-import { WeatherApp } from '@/components/apps/weather-app'
 
 const APPS: Record<AppId, () => React.ReactNode> = {
   kakao: () => <KakaoApp />,
@@ -37,22 +37,24 @@ const APPS: Record<AppId, () => React.ReactNode> = {
   voicememos: () => <VoiceMemosApp />,
   calendar: () => <CalendarApp />,
   clock: () => <ClockApp />,
-  calculator: () => <CalculatorApp />, // <-- Daftarkan di sini
+  calculator: () => <CalculatorApp />,
   weather: WeatherApp,
 }
 
 function Screens() {
   const { screen } = useStory()
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-black">
       {screen.kind === 'lock' && <LockScreen />}
       {screen.kind === 'passcode' && <Passcode />}
       {screen.kind === 'home' && <HomeScreen />}
       {screen.kind === 'app' && (
-        <div key={screen.app} className="animate-screen-in absolute inset-0">
+        <div key={screen.app} className="absolute inset-0 z-30 bg-black">
           {APPS[screen.app]()}
         </div>
       )}
+
       <TopNav />
       <NotificationBanner />
       <IncomingCall />

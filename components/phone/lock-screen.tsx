@@ -21,7 +21,6 @@ export function LockScreen() {
   const [realTimeClock, setRealTimeClock] = useState('')
   const [isLeaving, setIsLeaving] = useState(false)
   
-  // Menggunakan cache localStorage untuk menghindari kedip
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('cached_wallpaper') || withBasePath('/images/wallpaper.jpg')
@@ -88,21 +87,25 @@ export function LockScreen() {
     }
   }, [])
 
+ // Di dalam LockScreen component:
+  const [isBlurring, setIsBlurring] = useState(false)
+
   const handleUnlock = () => {
-    if (isLeaving) return
-    setIsLeaving(true)
+    if (isBlurring) return
+    setIsBlurring(true)
     setTimeout(() => {
       openPasscode()
-    }, 200)
+      setIsBlurring(false)
+    }, 250) // Durasi blur pelan-pelan (250ms)
   }
 
   return (
     <div
       className={cn(
-        "absolute inset-0 flex touch-none select-none flex-col bg-cover bg-center text-white transition-opacity duration-200 ease-out",
-        isLeaving ? "opacity-0" : "opacity-100"
+        "absolute inset-0 flex touch-none select-none flex-col text-white transition-[filter] duration-300 ease-out",
+        isBlurring ? "blur-xl scale-105" : "blur-0 scale-100" // Murni blur & subtle scale TANPA opacity-0 / bg-black
       )}
-      style={{ backgroundImage: `url(${wallpaperUrl})` }}
+      style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       onPointerDown={(e) => (startY.current = e.clientY)}
       onPointerUp={(e) => {
         if (startY.current !== null && startY.current - e.clientY > 60) {
@@ -111,7 +114,8 @@ export function LockScreen() {
         startY.current = null
       }}
     >
-      <div className="absolute inset-0 bg-black/5 backdrop-brightness-90 pointer-events-none" />
+      {/* Lapisan transparan pengaman */}
+      <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
       <div className="relative z-10 flex h-full flex-col">
         <StatusBar tone="light" />
