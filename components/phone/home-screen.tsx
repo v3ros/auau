@@ -88,8 +88,9 @@ function CalculatorIcon() {
 export function HomeScreen() {
   const { openApp, lock } = useStory()
   const [page, setPage] = useState(0)
+  const [isLocking, setIsLocking] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   
-  // Menggunakan cache localStorage untuk nilai awal wallpaper
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('cached_wallpaper') || withBasePath('/images/wallpaper.jpg')
@@ -100,6 +101,8 @@ export function HomeScreen() {
   const pagerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 20)
+
     const fetchWallpaper = async () => {
       const { data } = await supabase
         .from('app_config')
@@ -129,6 +132,7 @@ export function HomeScreen() {
       .subscribe()
 
     return () => {
+      clearTimeout(timer)
       supabase.removeChannel(channel)
     }
   }, [])
@@ -149,14 +153,22 @@ export function HomeScreen() {
   }
 
   const handleDoubleTapLock = () => {
-    if (typeof lock === 'function') {
-      lock()
-    }
+    if (isLocking) return
+    setIsLocking(true)
+    setTimeout(() => {
+      if (typeof lock === 'function') {
+        lock()
+      }
+      setIsLocking(false)
+    }, 320)
   }
 
   return (
     <div
-      className="absolute inset-0 flex flex-col bg-cover bg-center text-white select-none"
+      className={cn(
+        "absolute inset-0 flex flex-col bg-cover bg-center text-white select-none transition-[filter] duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]",
+        !isMounted || isLocking ? "blur-lg" : "blur-0"
+      )}
       style={{
         backgroundImage: `url(${wallpaperUrl})`,
       }}
@@ -289,7 +301,6 @@ function AppGrid({
           </>
         )
 
-        // Efek animasi tekan ala iOS (scale-85 saat ditekan)
         const cls =
           'flex flex-col items-center gap-[5px] transition-transform duration-150 active:scale-85'
 

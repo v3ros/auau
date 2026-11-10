@@ -19,7 +19,8 @@ export function LockScreen() {
 
   const [formattedDate, setFormattedDate] = useState('')
   const [realTimeClock, setRealTimeClock] = useState('')
-  const [isLeaving, setIsLeaving] = useState(false)
+  const [isBlurring, setIsBlurring] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -29,6 +30,8 @@ export function LockScreen() {
   })
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 20)
+
     const fetchWallpaper = async () => {
       const { data } = await supabase
         .from('app_config')
@@ -82,13 +85,11 @@ export function LockScreen() {
     const interval = setInterval(updateDateTime, 1000)
     
     return () => {
+      clearTimeout(timer)
       clearInterval(interval)
       supabase.removeChannel(channel)
     }
   }, [])
-
- // Di dalam LockScreen component:
-  const [isBlurring, setIsBlurring] = useState(false)
 
   const handleUnlock = () => {
     if (isBlurring) return
@@ -96,14 +97,14 @@ export function LockScreen() {
     setTimeout(() => {
       openPasscode()
       setIsBlurring(false)
-    }, 250) // Durasi blur pelan-pelan (250ms)
+    }, 320)
   }
 
-  return (
+ return (
     <div
       className={cn(
-        "absolute inset-0 flex touch-none select-none flex-col text-white transition-[filter] duration-300 ease-out",
-        isBlurring ? "blur-xl scale-105" : "blur-0 scale-100" // Murni blur & subtle scale TANPA opacity-0 / bg-black
+        "absolute inset-0 flex touch-none select-none flex-col text-white transition-[filter] duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]",
+        !isMounted || isBlurring ? "blur-lg" : "blur-0"
       )}
       style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       onPointerDown={(e) => (startY.current = e.clientY)}
@@ -114,7 +115,6 @@ export function LockScreen() {
         startY.current = null
       }}
     >
-      {/* Lapisan transparan pengaman */}
       <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
       <div className="relative z-10 flex h-full flex-col">

@@ -29,7 +29,8 @@ export function Passcode() {
   const { unlock, lock } = useStory()
   const [code, setCode] = useState('')
   const [shake, setShake] = useState(false)
-  const [isUnlocking, setIsUnlocking] = useState(false) // State blur pelan-pelan menuju Home
+  const [isUnlocking, setIsUnlocking] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   
   const [wallpaperUrl, setWallpaperUrl] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -39,6 +40,8 @@ export function Passcode() {
   })
 
   useEffect(() => {
+    const timer = setTimeout(() => setIsMounted(true), 20)
+
     const fetchWallpaper = async () => {
       const { data } = await supabase
         .from('app_config')
@@ -68,6 +71,7 @@ export function Passcode() {
       .subscribe()
 
     return () => {
+      clearTimeout(timer)
       supabase.removeChannel(channel)
     }
   }, [])
@@ -80,11 +84,11 @@ export function Passcode() {
         const next = prev + d
         if (next.length === 4) {
           if (next === PASSCODE) {
-            setIsUnlocking(true) // Picu efek blur pelan-pelan
+            setIsUnlocking(true)
             window.setTimeout(() => {
               unlock()
               setIsUnlocking(false)
-            }, 250) // Durasi blur sinkron dengan LockScreen (250ms)
+            }, 320)
           } else {
             window.setTimeout(() => setShake(true), 120)
             window.setTimeout(() => {
@@ -111,16 +115,15 @@ export function Passcode() {
     return () => window.removeEventListener('keydown', onKey)
   }, [press, erase, lock])
 
-  return (
+ return (
     <div
       className={cn(
-        "absolute inset-0 flex flex-col text-white transition-[filter] duration-300 ease-out",
-        isUnlocking ? "blur-xl scale-105" : "blur-0 scale-100" // Murni blur & subtle scale TANPA opacity-0
+        "absolute inset-0 flex flex-col text-white transition-[filter] duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]",
+        !isMounted || isUnlocking ? "blur-lg" : "blur-0"
       )}
       style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      {/* Efek blur latar belakang ala iOS Passcode */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-2xl transition-all duration-300" aria-hidden />
+      <div className="absolute inset-0 bg-black/35 backdrop-blur-2xl transition-all duration-350" aria-hidden />
       
       <div className="relative flex h-full flex-col z-10">
         <StatusBar tone="light" />
