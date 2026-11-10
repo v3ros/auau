@@ -78,17 +78,13 @@ export function Passcode() {
 
   const press = useCallback(
     (d: string) => {
-      if (shake || isUnlocking) return
+      if (shake) return
       setCode((prev) => {
         if (prev.length >= 4) return prev
         const next = prev + d
         if (next.length === 4) {
           if (next === PASSCODE) {
-            setIsUnlocking(true)
-            window.setTimeout(() => {
-              unlock()
-              setIsUnlocking(false)
-            }, 320)
+            unlock() // Langsung masuk home screen secara instan tanpa jeda
           } else {
             window.setTimeout(() => setShake(true), 120)
             window.setTimeout(() => {
@@ -100,7 +96,7 @@ export function Passcode() {
         return next
       })
     },
-    [shake, isUnlocking, unlock],
+    [shake, unlock],
   )
 
   const erase = useCallback(() => setCode((p) => p.slice(0, -1)), [])
@@ -119,11 +115,11 @@ export function Passcode() {
     <div
       className={cn(
         "absolute inset-0 flex flex-col text-white transition-[filter] duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]",
-        !isMounted || isUnlocking ? "blur-lg" : "blur-0"
+        !isMounted || isUnlocking ? "blur-lg " : "blur-0"
       )}
       style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
     >
-      <div className="absolute inset-0 bg-black/35 backdrop-blur-2xl transition-all duration-350" aria-hidden />
+      <div className="absolute inset-0 bg-black/35 backdrop-blur-md transition-all duration-350" aria-hidden />
       
       <div className="relative flex h-full flex-col z-10">
         <StatusBar tone="light" />

@@ -92,20 +92,12 @@ export function LockScreen() {
   }, [])
 
   const handleUnlock = () => {
-    if (isBlurring) return
-    setIsBlurring(true)
-    setTimeout(() => {
-      openPasscode()
-      setIsBlurring(false)
-    }, 320)
+    openPasscode() // Langsung pindah instan tanpa nunggu jeda
   }
 
- return (
+  return (
     <div
-      className={cn(
-        "absolute inset-0 flex touch-none select-none flex-col text-white transition-[filter] duration-350 ease-[cubic-bezier(0.25,1,0.5,1)]",
-        !isMounted || isBlurring ? "blur-lg" : "blur-0"
-      )}
+      className="absolute inset-0 flex touch-none select-none flex-col text-white transition-opacity duration-200 ease-out opacity-100 scale-110"
       style={{ backgroundImage: `url(${wallpaperUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       onPointerDown={(e) => (startY.current = e.clientY)}
       onPointerUp={(e) => {
