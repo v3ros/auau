@@ -118,11 +118,12 @@ function PageBody({ page }: { page: PageId }) {
 
     try {
       setIsUploading(true)
-      const fileName = `wallpaper-${Date.now()}.${file.name.split('.').pop()}`
+      // Pakai nama file tetap agar otomatis menimpa file lama di storage
+      const fileName = 'current-wallpaper.png'
       
       const { error: uploadError } = await supabase.storage
         .from('wallpapers')
-        .upload(fileName, file)
+        .upload(fileName, file, { upsert: true, cacheControl: '0' })
 
       if (uploadError) throw uploadError
 
@@ -130,7 +131,8 @@ function PageBody({ page }: { page: PageId }) {
         .from('wallpapers')
         .getPublicUrl(fileName)
 
-      const newUrl = publicUrlData.publicUrl
+      // Tambahkan query timestamp (?t=...) agar browser langsung memuat gambar baru tanpa nyangkut di cache URL lama
+      const newUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`
 
       const { error: dbError } = await supabase
         .from('app_config')
@@ -140,11 +142,7 @@ function PageBody({ page }: { page: PageId }) {
       if (dbError) throw dbError
 
       setCurrentWallpaper(newUrl)
-      
-      const wallpaperElements = document.querySelectorAll<HTMLElement>('[style*="wallpaper.jpg"], [style*="background-image"]')
-      wallpaperElements.forEach((el) => {
-        el.style.backgroundImage = `url("${newUrl}")`
-      })
+      localStorage.setItem('cached_wallpaper', newUrl)
 
       alert('Wallpaper updated successfully for all users!')
     } catch (err) {
