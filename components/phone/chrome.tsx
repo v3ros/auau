@@ -24,25 +24,39 @@ function WifiGlyph() {
   )
 }
 
-/** Indikator Baterai iOS yang Lebih Akurat & Mirip Asli */
-function BatteryGlyph({ percentage = 85 }: { percentage?: number }) {
+/** Indikator Baterai iOS Persis Referensi Asli */
+function BatteryGlyph({ percentage = 100, showPercentage = true }: { percentage?: number; showPercentage?: boolean }) {
   return (
-    <div className="flex items-center gap-[4px]" aria-hidden>
-      {/* Persentase Teks di Luar (Gaya iOS) */}
-      <span className="text-[12px] font-semibold tracking-tight">{percentage}%</span>
-      
-      {/* Bodi Baterai */}
-      <span className="flex items-center">
-        <span className="relative flex h-[11.5px] w-[22px] rounded-[3.5px] border border-current p-[1.5px]">
-          {/* Level Isi Baterai */}
-          <span 
-            className="h-full rounded-[1.5px] bg-current transition-all"
-            style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }} 
-          />
-        </span>
-        {/* Tip/Nipple Baterai Kanan */}
-        <span className="h-[4px] w-[1.5px] rounded-r-[1px] bg-current opacity-60" />
-      </span>
+    <div className="flex items-center" aria-hidden>
+      <div className="relative flex items-center">
+        {/* Bodi Kapsul Baterai */}
+        <div className={cn(
+          "relative flex h-[13px] w-[25px] items-center rounded-[4px] border-[1.2px] p-[1.5px] transition-all",
+          // Kalau persentase ON: Bodi terisi penuh warna solid, teks kontras di dalamnya
+          // Kalau OFF: Bodi kosong (transparan), hanya ada border garis
+          showPercentage 
+            ? "bg-current border-current text-background" 
+            : "bg-transparent border-current"
+        )}>
+          {/* Level isi (jika persentase off, kita bisa pakai bar level atau biarkan kosong bergaris) */}
+          {!showPercentage && (
+            <div 
+              className="h-full rounded-[1px] bg-current opacity-80"
+              style={{ width: `${Math.min(Math.max(percentage, 0), 100)}%` }} 
+            />
+          )}
+
+          {/* Teks Persentase di Tengah (Hanya muncul jika mode Percentage On) */}
+          {showPercentage && (
+            <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-bold leading-none tracking-tighter text-white mix-blend-difference">
+              {percentage}
+            </span>
+          )}
+        </div>
+        
+        {/* Nipple / Kop Baterai Kanan */}
+        <div className="h-[4px] w-[1.5px] rounded-r-[1px] bg-current opacity-60" />
+      </div>
     </div>
   )
 }
@@ -53,7 +67,6 @@ export function StatusBar({ tone = 'dark', className }: { tone?: 'dark' | 'light
   useEffect(() => {
     const updateTime = () => {
       const now = new Date()
-      // Mengambil Jam WIB (Asia/Jakarta)
       const timeString = now.toLocaleTimeString('id-ID', {
         timeZone: 'Asia/Jakarta',
         hour: '2-digit',
@@ -72,24 +85,29 @@ export function StatusBar({ tone = 'dark', className }: { tone?: 'dark' | 'light
   return (
     <div
       className={cn(
-        'relative flex h-[50px] shrink-0 items-center justify-between px-7 pt-1.5 text-[15px] font-semibold',
+        'relative flex h-[48px] shrink-0 items-center justify-between px-6 pt-2 text-[15px] font-semibold select-none',
         tone === 'dark' ? 'text-black' : 'text-white',
         className,
       )}
     >
-      {/* Jam Real-time Jakarta */}
-      <span className="w-14 text-center tabular-nums tracking-tight font-bold">
-        {realTimeClock || '16:41'}
+      {/* Jam Real-time di Kiri (Lebih nempel ke pinggir & tebal khas SF Pro) */}
+      <span className="w-12 text-left tabular-nums tracking-[-0.01em] font-semibold pl-1">
+        {realTimeClock || '18:34'}
       </span>
 
-      {/* Dynamic Island / Notch */}
-      <span
-        className="absolute left-1/2 top-[11px] hidden h-[30px] w-[110px] -translate-x-1/2 rounded-full bg-black sm:block"
+      {/* Dynamic Island Asli: Lebih rapat ke atas, lebar pas, sudut lengkung presisi */}
+      <div
+        className="absolute left-1/2 top-[8px] hidden h-[28px] w-[124px] -translate-x-1/2 rounded-full bg-black sm:flex items-center justify-between px-2.5 pointer-events-none shadow-sm"
         aria-hidden
-      />
+      >
+        <div className="size-2.5 rounded-full bg-black border border-white/10" />
+        <div className="size-3.5 rounded-full bg-[#0a0a0d] border border-white/5 flex items-center justify-center">
+          <div className="size-1.5 rounded-full bg-[#1c1c1e]" />
+        </div>
+      </div>
 
-      {/* Ikon Sinyal, Wi-Fi & Baterai iOS */}
-      <span className="flex items-center gap-[7px]" aria-label="Signal, Wi-Fi, Battery 85%">
+      {/* Ikon Sinyal, Wi-Fi & Baterai iOS di Kanan */}
+      <span className="flex items-center gap-[6px]" aria-label="Signal, Wi-Fi, Battery">
         <SignalBars />
         <WifiGlyph />
         <BatteryGlyph percentage={12} />
@@ -115,14 +133,13 @@ export function HomeIndicator({
       type="button"
       onClick={onActivate ?? goHome}
       aria-label={label}
-      className={cn('flex h-[26px] w-full shrink-0 items-center justify-center', className)}
+      className={cn('flex h-[24px] w-full shrink-0 items-center justify-center', className)}
     >
-      <span className={cn('h-[5px] w-[136px] rounded-full', tone === 'dark' ? 'bg-black' : 'bg-white')} />
+      <span className={cn('h-[5px] w-[134px] rounded-full', tone === 'dark' ? 'bg-black' : 'bg-white')} />
     </button>
   )
 }
 
-/** App Shell Skeleton: Status bar + Header + Scroll Body + Footer + Home Indicator */
 export function AppShell({
   header,
   footer,
